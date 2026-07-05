@@ -24,7 +24,7 @@ session_start();
             position: relative;
         }
  
-        /* Fun floating shapes in background */
+        
         body::before,
         body::after {
             content: '';
@@ -50,33 +50,8 @@ session_start();
             right: -60px;
         }
  
-        /* Extra decorative blobs */
-        .blob1, .blob2, .blob3 {
-            position: fixed;
-            border-radius: 50%;
-            opacity: 0.18;
-            z-index: 0;
-        }
- 
-        .blob1 {
-            width: 180px; height: 180px;
-            background: #76FF03;
-            bottom: 60px; left: -40px;
-        }
- 
-        .blob2 {
-            width: 140px; height: 140px;
-            background: #FF6D00;
-            top: 40px; right: -20px;
-        }
- 
-        .blob3 {
-            width: 100px; height: 100px;
-            background: #AA00FF;
-            top: 50%; left: 5%;
-        }
- 
-        /* Stars / stars decoration */
+        
+        
         .stars {
             position: fixed;
             top: 0; left: 0;
@@ -97,7 +72,7 @@ session_start();
             50%       { transform: translateY(-14px) rotate(15deg); }
         }
  
-        /* Brand */
+        
         .brand {
             text-align: center;
             margin-bottom: 22px;
@@ -119,7 +94,7 @@ session_start();
         .brand h1 {
             font-size: 2.4rem;
             font-weight: 900;
-            /* Rainbow text */
+            
             background: linear-gradient(90deg, #FF4081, #FF6D00, #FFD600, #00C853, #00BCD4, #AA00FF);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -136,14 +111,14 @@ session_start();
             margin-top: 4px;
         }
  
-        /* Card */
+        
         .card {
             background: #fff;
             border-radius: 24px;
             padding: 36px 32px;
             width: 100%;
             max-width: 400px;
-            /* Thick fun border */
+            
             border: 4px solid #FF4081;
             box-shadow:
                 6px 6px 0px #FF6D00,
@@ -191,7 +166,7 @@ session_start();
             box-shadow: 0 0 0 4px rgba(255,64,129,0.15);
         }
  
-        /* Login button */
+        
         .btn-login {
             width: 100%;
             padding: 15px;
@@ -218,7 +193,7 @@ session_start();
             border-bottom: 2px solid #C2185B;
         }
  
-        /* Sign up */
+    
         .signup-text {
             text-align: center;
             margin-top: 20px;
@@ -240,7 +215,7 @@ session_start();
             text-decoration: underline;
         }
  
-        /* Fun emoji row */
+        
         .emoji-row {
             text-align: center;
             font-size: 1.5rem;
