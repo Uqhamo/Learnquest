@@ -1,5 +1,55 @@
 <?php
+session_start();
+require_once 'db.php';
+$error   = "";
+$success = "";
+ 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
+    $name         = trim($_POST['name']         ?? '');
+    $surname      = trim($_POST['surname']      ?? '');
+    $username     = trim($_POST['username']     ?? '');
+    $pass         = $_POST['pass']              ?? '';
+    $confirm_pass = $_POST['confirm_pass']      ?? '';
 
+    if (empty($name) || empty($surname) || empty($username) || empty($pass)) {
+        $error = "Please fill in all fields.";
+ 
+    } elseif (strlen($pass) < 6) {
+        $error = "Password must be at least 6 characters.";
+ 
+    } elseif ($pass !== $confirm_pass) {
+        $error = "Passwords do not match.";
+ 
+    } else {
+        $db = get_db();
+ 
+        // Check username not already taken
+        $check = $db->prepare("SELECT id FROM parents WHERE username = ?");
+        $check->bind_param("s", $username);
+        $check->execute();
+        $check->store_result();
+ 
+        if ($check->num_rows > 0) {
+            $error = "That username is already taken. Please choose another.";
+        } else {
+            // Hash password with bcrypt
+            $hashed = password_hash($pass, PASSWORD_BCRYPT);
+ 
+            $stmt = $db->prepare(
+                "INSERT INTO parents (name, surname, username, password) VALUES (?, ?, ?, ?)"
+            );
+            $stmt->bind_param("ssss", $name, $surname, $username, $hashed);
+ 
+            if ($stmt->execute()) {
+                $success = "Account created! <a href='login.php'>Log in now</a>.";
+            } else {
+                $error = "Something went wrong. Please try again.";
+            }
+            $stmt->close();
+        }
+        $check->close();
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -19,7 +69,7 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
-            overflow: hidden;
+            overflow: auto;
             position: relative;
         }
  

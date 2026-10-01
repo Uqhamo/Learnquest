@@ -20,7 +20,7 @@ session_start();
             justify-content: center;
             align-items: center;
             padding: 20px;
-            overflow: hidden;
+            overflow: auto;
             position: relative;
         }
  
@@ -232,7 +232,7 @@ session_start();
     <div class="card">
         <h2>Login</h2>
 
-    <form action="login.php" method="post">
+    <form action="dashboard.php" method="post">
         <div class="field">
         <label for="user">Username:</label><br>
         <input type ="text" name = "user" id="user" placeholder="Enter your username" required><br><br>
