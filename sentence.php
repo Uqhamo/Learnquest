@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once 'feedback_helper.php';
 
 $questions = [
     [
@@ -63,6 +64,7 @@ if (!isset($_SESSION["sentence_total"])) {
 $message = "";
 $messageClass = "";
 $explanation = "";
+$api_feedback ="";
 
 if (
     $_SERVER["REQUEST_METHOD"] === "POST"
@@ -97,6 +99,16 @@ if (
         $messageClass = "wrong";
 
         $explanation = $previousTip;
+    }
+     $_SESSION['spelling_attempts'] =($_SESSION['spelling_attempts']?? 0)+1;
+    $api_feedback = get_api_feedback(
+        'spelling',
+        $answer === $correctAnswer,
+        $_SESSION['spelling_attempts'],
+        $answer
+    );
+    if($answer === $correctAnswer){
+        $_SESSION['spelling_attempts'] =0;
     }
 }
 
@@ -260,11 +272,20 @@ h1 {
     border: 3px solid #4CAF50;
     color: #2E7D32;
 }
-
+/*
 .wrong {
     background: #FFCDD2;
     border: 3px solid #E53935;
     color: #C62828;
+}*/
+.ai-feedback {
+    background: #E1BEE7;
+    border: 3px solid #9C27B0;
+    color: #4A148C;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-weight: bold;
 }
 
 .tip {
@@ -361,7 +382,7 @@ h1 {
 
             <div class="tip">
 
-                💡 <strong>Learning Tip:</strong>
+                 <strong>Learning Tip:</strong>
 
                 <?php
                 echo htmlspecialchars($explanation);

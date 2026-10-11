@@ -6,9 +6,7 @@ ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 
-/* =========================================================
-   1. GET THE SELECTED OPERATION
-   ========================================================= */
+
 
 if (isset($_POST['operation'])) {
     $_SESSION['operation'] = $_POST['operation'];
@@ -17,17 +15,12 @@ if (isset($_POST['operation'])) {
 $operation = $_SESSION['operation'] ?? 'addition';
 
 
-/* =========================================================
-   2. CHILD INFORMATION
-   ========================================================= */
+
 
 $child_id = $_SESSION['child_id'] ?? "1";
 $child_age = $_SESSION['child_age'] ?? 8;
 
 
-/* =========================================================
-   3. FEEDBACK VARIABLES
-   ========================================================= */
 
 $message = "";
 $message_class = "";
@@ -37,9 +30,7 @@ $tip = "";
 $api_feedback = "";
 
 
-/* =========================================================
-   4. CHECK THE ANSWER
-   ========================================================= */
+
 
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST'
@@ -401,6 +392,8 @@ shuffle($options);
 
     <title>LearnQuest Mathematics Quiz</title>
 
+   <link rel="stylesheet" href="calculation.css">    
+    
 </head>
 
 
@@ -423,12 +416,11 @@ shuffle($options);
 </div>
 
 
-<div class="quiz-container">
+<div class="content">
+    <div class="card">
 
 
-    <!-- ==================================================
-         MENU
-         ================================================== -->
+   
 
     
 
@@ -582,7 +574,7 @@ shuffle($options);
 
 </div>
 
-
+</div>
 </body>
 
 </html>

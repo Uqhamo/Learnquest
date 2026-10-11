@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once 'feedback_helper.php';
 
 $questions = [
     ["correct"=>"Beautiful",
@@ -34,6 +35,7 @@ $questions = [
 
 ];
 $message = "";
+$api_feedback ="";
 $messageClass = "";
 
 if($_SERVER["REQUEST_METHOD"]=== "POST" && isset($_POST["answer"])){
@@ -48,6 +50,19 @@ $correctAnswer = $_SESSION["spelling_answer"] ?? "";
         $message = "Not quite. The correct spelling was: "
                  . htmlspecialchars($correctAnswer);
         $messageClass = "wrong";
+    }
+
+    $_SESSION['sentence_attempts'] = ($_SESSION['sentence_attempts'] ?? 0) + 1;
+
+    $api_feedback = get_api_feedback(
+        'sentence',
+        $answer === $correctAnswer,
+        $_SESSION['sentence_attempts'],
+        $answer
+    );
+
+    if ($answer === $correctAnswer) {
+        $_SESSION['sentence_attempts'] = 0;
     }
 }
 
@@ -187,12 +202,21 @@ shuffle($options);
             border: 3px solid #4CAF50;
             color: #2E7D32;
         }
-
+/*
         .wrong {
             background: #FFCDD2;
             border: 3px solid #E53935;
             color: #C62828;
-        }
+        }*/
+            .ai-feedback {
+    background: #E1BEE7;
+    border: 3px solid #9C27B0;
+    color: #4A148C;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
 
         .skip {
             display: block;
@@ -242,6 +266,12 @@ shuffle($options);
 
         <?php endif; ?>
 
+<?php if ($api_feedback): ?>
+    <div class="ai-feedback">
+        <strong>Learning Feedback:</strong><br><br>
+        <?php echo htmlspecialchars($api_feedback); ?>
+    </div>
+<?php endif; ?>
         <div class="question">
             Which word is spelled correctly?
         </div>
