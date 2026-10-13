@@ -1,5 +1,6 @@
-<?php
+﻿<?php
 session_start();
+require_once 'progress_helper.php';
 require_once 'feedback_helper.php';
 
 $questions = [
@@ -42,6 +43,8 @@ if($_SERVER["REQUEST_METHOD"]=== "POST" && isset($_POST["answer"])){
 
 $answer = $_POST["answer"];
 $correctAnswer = $_SESSION["spelling_answer"] ?? "";
+$seconds = microtime(true) - ($_SESSION['q_start'] ?? microtime(true));
+log_attempt('english', 'spelling', $answer === $correctAnswer, $seconds);
 
   if ($answer === $correctAnswer) {
         $message = "Correct! Great spelling!";
@@ -69,6 +72,7 @@ $correctAnswer = $_SESSION["spelling_answer"] ?? "";
 $question = $questions[array_rand($questions)];
 
 $_SESSION["spelling_answer"] = $question["correct"];
+$_SESSION['q_start'] = microtime(true);
 
 $options = $question["options"];
 shuffle($options);
@@ -245,7 +249,7 @@ shuffle($options);
 <div class="container">
 
     <a href="englishgames.php" class="back">
-        ← English Games
+        â† English Games
     </a>
 
     <div class="card">
@@ -299,7 +303,7 @@ shuffle($options);
         </form>
 
         <a href="spelling.php" class="skip">
-            Skip Word →
+            Skip Word â†’
         </a>
 
     </div>

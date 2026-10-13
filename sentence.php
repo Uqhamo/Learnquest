@@ -1,5 +1,6 @@
-<?php
+﻿<?php
 session_start();
+require_once 'progress_helper.php';
 require_once 'feedback_helper.php';
 
 $questions = [
@@ -79,6 +80,9 @@ if (
     $previousTip =
         $_SESSION["sentence_tip"] ?? "";
 
+    $seconds = microtime(true) - ($_SESSION['q_start'] ?? microtime(true));
+    log_attempt('english', 'sentence', $answer === $correctAnswer, $seconds);
+
     $_SESSION["sentence_total"]++;
 
     if ($answer === $correctAnswer) {
@@ -120,6 +124,7 @@ $question =
 $_SESSION["sentence_answer"] =
     $question["correct"];
 
+$_SESSION['q_start'] = microtime(true);
 $_SESSION["sentence_tip"] =
     $question["tip"];
 
@@ -326,7 +331,7 @@ h1 {
 <div class="container">
 
     <a href="englishgames.php" class="back">
-        ← English Games
+        â† English Games
     </a>
 
     <div class="card">
@@ -435,7 +440,7 @@ h1 {
 
 
         <a href="sentence.php" class="skip">
-            Skip Question →
+            Skip Question â†’
         </a>
 
     </div>

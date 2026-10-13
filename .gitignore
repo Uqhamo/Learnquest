@@ -1,4 +1,8 @@
+learnquest.db
 __pycache__/
-*.pyc
-.vscode/
-Learnquest/
+*.bak
+*.bak2
+*.bak3
+*.bak4
+dashboard_backup.php
+dashboard_pre_*.php

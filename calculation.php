@@ -1,6 +1,7 @@
-<?php
+﻿<?php
 
 session_start();
+require_once 'progress_helper.php';
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -46,6 +47,8 @@ if (
     // Compare answers
     $is_correct =
         ($user_choice === $correct_choice);
+    $seconds = microtime(true) - ($_SESSION['q_start'] ?? microtime(true));
+    log_attempt('math', $operation, $is_correct, $seconds);
 
 
     /* =====================================================
@@ -373,6 +376,7 @@ while (count($options) < 4) {
 
 
 shuffle($options);
+$_SESSION['q_start'] = microtime(true);
 
 ?>
 
@@ -514,14 +518,14 @@ shuffle($options);
         if ($operator === '*') {
 
             $display_operator =
-                '×';
+                'Ã—';
         }
 
 
         if ($operator === '/') {
 
             $display_operator =
-                '÷';
+                'Ã·';
         }
 
 
