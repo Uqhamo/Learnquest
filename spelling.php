@@ -57,17 +57,17 @@ log_attempt('english', 'spelling', $answer === $correctAnswer, $seconds);
         $messageClass = "wrong";
     }
 
-    $_SESSION['sentence_attempts'] = ($_SESSION['sentence_attempts'] ?? 0) + 1;
+    $_SESSION['spelling_attempts'] = ($_SESSION['spelling_attempts'] ?? 0) + 1;
 
     $api_feedback = get_api_feedback(
-        'sentence',
+        'spelling',
         $answer === $correctAnswer,
-        $_SESSION['sentence_attempts'],
+        $_SESSION['spelling_attempts'],
         $answer
     );
 
     if ($answer === $correctAnswer) {
-        $_SESSION['sentence_attempts'] = 0;
+        $_SESSION['spelling_attempts'] = 0;
     }
 }
 
@@ -242,7 +242,7 @@ shuffle($options);
             }
         }
 
-    </style>
+    .wrong, .wrong-fix { background: #FFCDD2; border: 3px solid #E53935; color: #C62828; }</style>
 
 </head>
 
@@ -250,13 +250,11 @@ shuffle($options);
 
 <div class="container">
 
-    <a href="englishgames.php" class="back">
-        â† English Games
-    </a>
+    <a href="englishgames.php" class="back">&larr; English Games</a>
 
     <div class="card">
 
-        <div class="icon"></div>
+        <div class="icon">&#128292;</div>
 
         <h1>Spelling Challenge</h1>
 
@@ -304,9 +302,7 @@ shuffle($options);
 
         </form>
 
-        <a href="spelling.php" class="skip">
-            Skip Word â†’
-        </a>
+        <a href="spelling.php" class="skip">Skip Word &rarr;</a>
 
     </div>
 

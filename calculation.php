@@ -431,7 +431,7 @@ $signs = ['+' => '+', '-' => '-', '*' => '&times;', '/' => '&divide;'];
 <div class="content">
     <div class="card">
 
-        <a href="dashboard.php" class="btn next-btn">Menu</a>
+        
 
         <?php if ($message): ?>
             <div class="<?php echo htmlspecialchars($message_class); ?>"><?php echo $message; ?></div>
@@ -465,7 +465,7 @@ $signs = ['+' => '+', '-' => '-', '*' => '&times;', '/' => '&divide;'];
         </form>
         <br>
 
-        <a href="calculation.php?skip=1" class="btn next-btn">Skip Question</a>
+        <div class="action-row"><a href="calculation.php?skip=1" class="btn next-btn">Skip Question</a><a href="dashboard.php" class="btn menu-btn">Menu</a></div>
         <a href="calculation.php?exit=1" class="btn exit-btn">Finish &amp; See Score</a>
 
     </div>

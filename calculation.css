@@ -116,3 +116,5 @@ h2 {
   text-align: left;
 }
 .score-box { background: #E1F5FE; border: 3px solid #03A9F4; color: #0277BD; padding: 12px; border-radius: 12px; margin-bottom: 15px; font-weight: bold; } .exit-btn { background: #E53935 !important; margin-top: 10px; }
+.menu-link { position: fixed; top: 14px; left: 18px; z-index: 50; color: #6A1B9A; font-weight: 800; font-size: 1.05rem; text-decoration: none; background: none; } .menu-link:hover { color: #FF4081; text-decoration: underline; }
+.action-row { display: flex; gap: 10px; margin-top: 10px; } .action-row .btn { flex: 1; margin-top: 0; } .menu-btn { background: #00BCD4 !important; }

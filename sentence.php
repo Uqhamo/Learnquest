@@ -332,15 +332,11 @@ h1 {
 
 <div class="container">
 
-    <a href="englishgames.php" class="back">
-        â† English Games
-    </a>
+    <a href="englishgames.php" class="back">&larr; English Games</a>
 
     <div class="card">
 
-        <div class="icon">
-            
-        </div>
+        <div class="icon">&#128221;</div>
 
         <h1>
             Complete the Sentence
@@ -389,7 +385,7 @@ h1 {
 
             <div class="tip">
 
-                 <strong>Learning Tip:</strong>
+                 <strong>&#128161; Learning Tip:</strong>
 
                 <?php
                 echo htmlspecialchars($explanation);
@@ -441,9 +437,7 @@ h1 {
         </form>
 
 
-        <a href="sentence.php" class="skip">
-            Skip Question â†’
-        </a>
+        <a href="sentence.php" class="skip">Skip Question &rarr;</a>
 
     </div>
 
