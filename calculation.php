@@ -1,6 +1,8 @@
-﻿<?php
+<?php
 
 session_start();
+if (empty($_SESSION['parent_id'])) { header('Location: login2.php'); exit; }
+if (empty($_SESSION['child_id'])) { header('Location: select_child.php'); exit; }
 require_once 'progress_helper.php';
 
 ini_set('display_errors', 1);

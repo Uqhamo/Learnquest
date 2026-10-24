@@ -1,5 +1,5 @@
 <?php 
-session_start();
+session_start(); require_once __DIR__ . "/database.php"; $error = ""; if ($_SERVER["REQUEST_METHOD"] === "POST") { $u = trim($_POST["user"] ?? ""); $st = $pdo->prepare("SELECT id, password_hash FROM parents WHERE username = ? OR email = ?"); $st->execute([$u, $u]); $p = $st->fetch(); if ($p && password_verify($_POST["pass"] ?? "", $p["password_hash"])) { session_regenerate_id(true); $_SESSION["parent_id"] = (int) $p["id"]; unset($_SESSION["child_id"], $_SESSION["child_age"]); header("Location: select_child.php"); exit; } $error = "Wrong username or password."; }
 
 ?>
 <!DOCTYPE html>
@@ -230,12 +230,12 @@ session_start();
     <h2>Welcome Back!</h2>
     </div>
     <div class="card">
-        <h2>Login</h2>
+        <h2>Login</h2><?php if ($error): ?><p style="color:#C62828;text-align:center;font-weight:bold"><?php echo htmlspecialchars($error); ?></p><?php endif; ?>
 
-    <form action="dashboard.php" method="post">
+    <form action="" method="post">
         <div class="field">
-        <label for="user">Username:</label><br>
-        <input type ="text" name = "user" id="user" placeholder="Enter your username" required><br><br>
+        <label for="user">Email:</label><br>
+        <input type ="text" name = "user" id="user" placeholder="Enter your email" required><br><br>
         </div>
         <div class="field">
         <label for="pass">Password:</label><br>

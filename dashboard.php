@@ -1,5 +1,7 @@
-﻿<?php
+<?php
 session_start();
+if (empty($_SESSION['parent_id'])) { header('Location: login2.php'); exit; }
+if (empty($_SESSION['child_id'])) { header('Location: select_child.php'); exit; }
 require_once 'progress_helper.php';
 $report = get_progress_report();
 ?>
@@ -264,7 +266,7 @@ $report = get_progress_report();
             <a href="">Profile</a>
             <a href =""> For Parent</a>
             <a href="#" onclick="openProgress();return false;">Progress</a>
-        </nav>
+        <a href="select_child.php">Switch child</a><a href="logout.php">Logout</a></nav>
     </header>
     <main>
         <h2 class="greeting">Time to Play & Learn</h2>

@@ -1,55 +1,4 @@
-<?php
-session_start();
-require_once 'db.php';
-$error   = "";
-$success = "";
- 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
-    $name         = trim($_POST['name']         ?? '');
-    $surname      = trim($_POST['surname']      ?? '');
-    $username     = trim($_POST['username']     ?? '');
-    $pass         = $_POST['pass']              ?? '';
-    $confirm_pass = $_POST['confirm_pass']      ?? '';
-
-    if (empty($name) || empty($surname) || empty($username) || empty($pass)) {
-        $error = "Please fill in all fields.";
- 
-    } elseif (strlen($pass) < 6) {
-        $error = "Password must be at least 6 characters.";
- 
-    } elseif ($pass !== $confirm_pass) {
-        $error = "Passwords do not match.";
- 
-    } else {
-        $db = get_db();
- 
-        // Check username not already taken
-        $check = $db->prepare("SELECT id FROM parents WHERE username = ?");
-        $check->bind_param("s", $username);
-        $check->execute();
-        $check->store_result();
- 
-        if ($check->num_rows > 0) {
-            $error = "That username is already taken. Please choose another.";
-        } else {
-            // Hash password with bcrypt
-            $hashed = password_hash($pass, PASSWORD_BCRYPT);
- 
-            $stmt = $db->prepare(
-                "INSERT INTO parents (name, surname, username, password) VALUES (?, ?, ?, ?)"
-            );
-            $stmt->bind_param("ssss", $name, $surname, $username, $hashed);
- 
-            if ($stmt->execute()) {
-                $success = "Account created! <a href='login.php'>Log in now</a>.";
-            } else {
-                $error = "Something went wrong. Please try again.";
-            }
-            $stmt->close();
-        }
-        $check->close();
-    }
-}
+<?php session_start(); require_once __DIR__ . "/database.php"; $error = ""; $success = ""; if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["register"])) { $name = trim($_POST["name"] ?? ""); $surname = trim($_POST["surname"] ?? ""); $email = trim($_POST["email"] ?? ""); $pass = $_POST["pass"] ?? ""; $confirm_pass = $_POST["confirm_pass"] ?? ""; if ($name === "" || $surname === "" || $email === "" || $pass === "") { $error = "Please fill in all fields."; } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) { $error = "Please enter a valid email address."; } elseif (strlen($pass) < 6) { $error = "Password must be at least 6 characters."; } elseif ($pass !== $confirm_pass) { $error = "Passwords do not match."; } else { $check = $pdo->prepare("SELECT 1 FROM parents WHERE email = ? OR username = ?"); $check->execute([$email, $email]); if ($check->fetch()) { $error = "That email is already registered."; } else { $ins = $pdo->prepare("INSERT INTO parents (name, surname, username, email, password_hash) VALUES (?, ?, ?, ?, ?)"); $ins->execute([$name, $surname, $email, $email, password_hash($pass, PASSWORD_DEFAULT)]); session_regenerate_id(true); $_SESSION["parent_id"] = (int) $pdo->lastInsertId(); header("Location: registerchild.php"); exit; } } }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -280,7 +229,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
             </div>
         </div>
 <div class="field">
-        <label for="pass">Password:</label><br>
+        <label for="email">Email:</label><br><input type="email" name="email" id="email" placeholder="Your email address" required><br><br></div><div class="field"><label for="pass">Password:</label><br>
         <input type="password" name="pass" id="pass" placeholder="Create a password" required><br><br>
         <p class="hint">Use at least 6 characters</p>
 </div>

@@ -6,3 +6,10 @@ __pycache__/
 *.bak4
 dashboard_backup.php
 dashboard_pre_*.php
+*.pre_guard.bak
+*_pre_auth.php
+*_pre_label.php
+dashboard_pre_logout.php
+login2_pre_auth.php
+register_pre_auth.php
+registerchild_pre_auth.php

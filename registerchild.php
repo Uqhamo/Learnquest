@@ -1,5 +1,4 @@
-<?php
-session_start()
+<?php session_start(); require_once __DIR__ . "/database.php"; if (empty($_SESSION["parent_id"])) { header("Location: login2.php"); exit; } $error = ""; if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["register"])) { $name = trim($_POST["name"] ?? ""); $surname = trim($_POST["surname"] ?? ""); $age = (int) ($_POST["age"] ?? 0); $grade = (int) ($_POST["grade"] ?? 0); if ($name === "" || $surname === "" || $age < 4 || $age > 12 || $grade < 1 || $grade > 7) { $error = "Please enter a name, surname, age 4 to 12 and a grade from 1 to 7."; } else { $st = $pdo->prepare("INSERT INTO children (parent_id, name, surname, age, grade) VALUES (?, ?, ?, ?, ?)"); $st->execute([$_SESSION["parent_id"], $name, $surname, $age, $grade]); $_SESSION["child_id"] = (int) $pdo->lastInsertId(); $_SESSION["child_age"] = $age; header("Location: dashboard.php"); exit; } }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -254,7 +253,7 @@ session_start()
         <p>Tell us a little about yourself!</p>
             </div>
         </div>
-    <form action="dashboard.php" method="post">
+    <?php if ($error): ?><p style="color:#C62828;font-weight:bold"><?php echo htmlspecialchars($error); ?></p><?php endif; ?><form action="" method="post">
        <div class="field-row">
         <div class="field">
         <label for="name">Enter your Name:</label><br>
@@ -266,7 +265,7 @@ session_start()
 
 <div class="field">
         <label for="age">How old are you?</label><br>
-        <input type="number" name = "age"  id="age" placeholder="e.g 9" min="4" max = "13" required><p class="hint">Enter your age in years</p></div>
+        <input type="number" name = "age"  id="age" placeholder="e.g 9" min="4" max="12" required><p class="hint">Enter your age in years</p></div>
 
 
             <span class="grade-label">What grade are you in?</span>
