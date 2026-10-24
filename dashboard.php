@@ -3,7 +3,7 @@ session_start();
 if (empty($_SESSION['parent_id'])) { header('Location: login2.php'); exit; }
 if (empty($_SESSION['child_id'])) { header('Location: select_child.php'); exit; }
 require_once 'progress_helper.php';
-$report = get_progress_report();
+require_once __DIR__ . "/database.php"; $family = get_family_report($pdo, $_SESSION["parent_id"]);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -255,7 +255,7 @@ $report = get_progress_report();
 .progress-card.processing { border-color: #FF6D00; }
 .progress-card.progressing { border-color: #03A9F4; }
 .progress-card.struggling { border-color: #E53935; }
-.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modal-box{background:#FFF176;border-radius:20px;padding:24px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;position:relative}.modal-box h2{color:#FF6D00;margin-bottom:12px}.modal-close{position:absolute;top:12px;right:14px;border:none;background:#FF4081;color:#fff;border-radius:50%;width:32px;height:32px;cursor:pointer;font-weight:bold}</style>
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modal-box{background:#FFF176;border-radius:20px;padding:24px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;position:relative}.modal-box h2{color:#FF6D00;margin-bottom:12px}.modal-close{position:absolute;top:12px;right:14px;border:none;background:#FF4081;color:#fff;border-radius:50%;width:32px;height:32px;cursor:pointer;font-weight:bold}.child-name{color:#C2185B;margin:16px 0 4px}</style>
 </head>
 <body>
     <header>
@@ -293,7 +293,7 @@ $report = get_progress_report();
         
         </form>
 
-    <div id="progressModal" class="modal"><div class="modal-box"><button type="button" class="modal-close" onclick="closeProgress()">X</button><h2>My Progress</h2><?php if (!$report): ?><p class="subtitle">No results yet. Play a game to see your progress!</p><?php endif; ?><?php foreach ($report as $r): ?><div class="progress-card <?php echo htmlspecialchars($r["status"]); ?>"><strong><?php echo htmlspecialchars(ucfirst($r["skill"])); ?></strong> (<?php echo htmlspecialchars(ucfirst($r["subject"])); ?>)<br><?php echo (int)$r["accuracy"]; ?>% correct over <?php echo (int)$r["total"]; ?> questions<p><?php echo htmlspecialchars($r["summary"]); ?></p><p><em><?php echo htmlspecialchars($r["action"]); ?></em></p></div><?php endforeach; ?></div></div></main>
+    <div id="progressModal" class="modal"><div class="modal-box"><button type="button" class="modal-close" onclick="closeProgress()">X</button><h2>My Children</h2><?php if (!$family): ?><p>No child profiles yet.</p><?php endif; ?><?php foreach ($family as $ch): ?><h3 class="child-name"><?php echo htmlspecialchars($ch["name"] . " " . $ch["surname"]); ?> (Grade <?php echo (int) $ch["grade"]; ?>)</h3><?php if (!$ch["report"]): ?><p>No results yet.</p><?php endif; ?><?php foreach ($ch["report"] as $r): ?><div class="progress-card <?php echo htmlspecialchars($r["status"]); ?>"><strong><?php echo htmlspecialchars(ucfirst($r["skill"])); ?></strong> (<?php echo htmlspecialchars(ucfirst($r["subject"])); ?>)<br><?php echo (int) $r["accuracy"]; ?>% correct over <?php echo (int) $r["total"]; ?> questions<p><?php echo htmlspecialchars($r["summary"]); ?></p><p><em><?php echo htmlspecialchars($r["action"]); ?></em></p></div><?php endforeach; ?><?php endforeach; ?></div></div></main>
 <script>function openProgress(){document.getElementById("progressModal").classList.add("open");}function closeProgress(){document.getElementById("progressModal").classList.remove("open");}document.getElementById("progressModal").addEventListener("click",function(e){if(e.target===this){closeProgress();}});</script></body>
 
 </html>

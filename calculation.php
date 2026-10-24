@@ -11,13 +11,23 @@ error_reporting(E_ALL);
 
 
 
+
 if (isset($_POST['operation'])) {
     $_SESSION['operation'] = $_POST['operation'];
+    $_SESSION['calc_score'] = 0;
+    $_SESSION['calc_right'] = 0;
+    $_SESSION['calc_done'] = 0;
+
 }
+    $_SESSION['calc_score'] = $_SESSION['calc_score'] ?? 0;
+    $_SESSION['calc_right'] = $_SESSION['calc_right'] ?? 0;
+    $_SESSION['calc_done'] = $_SESSION['calc_done'] ?? 0;
+
 
 $operation = $_SESSION['operation'] ?? 'addition';
 
-
+$generate_new = !isset($_SESSION['current_q']) || isset($_GET['skip']) || isset($_POST['operation']);
+$show_feedback = false;
 
 
 $child_id = $_SESSION['child_id'] ?? "1";
@@ -49,9 +59,8 @@ if (
     // Compare answers
     $is_correct =
         ($user_choice === $correct_choice);
-    $seconds = microtime(true) - ($_SESSION['q_start'] ?? microtime(true));
+ $seconds = microtime(true) - ($_SESSION['q_start'] ?? microtime(true));
     log_attempt('math', $operation, $is_correct, $seconds);
-
 
     /* =====================================================
        ATTEMPT COUNTER
@@ -71,59 +80,50 @@ if (
        NORMAL FEEDBACK
        ===================================================== */
 
-    if ($is_correct) {
+     if ($is_correct) {
+        $points = max(1,4 - $attempts_count);
+    $_SESSION['calc_score'] += $points;
+    $_SESSION['calc_right']++;
+    $_SESSION['calc_done']++;
 
-        $message = "Correct! Well done.";
+
+
+        $message = "Correct! Well done. +" . $points . " points";
         $message_class = "correct";
-
-        // Reset attempts after a correct answer
+        $show_feedback = true;
+        $generate_new = true;
         $_SESSION['attempts_count'] = 0;
 
     } else {
 
-        $message =
-            "The answer is wrong. You chose <strong>"
-            . $user_choice .
-            "</strong>.";
-
+        $message = "The answer is wrong. You chose <strong>"
+                 . $user_choice . "</strong>.";
         $message_class = "wrong";
 
-        $show_correct = true;
-
-
-        /* Get previous question operator */
-
-        $last_op =
-            $_SESSION['last_operator'] ?? '+';
-
-
-        /* Tips */
+        $last_op = $_SESSION['last_operator'] ?? '+';
 
         $tips = [
-
-            '+' =>
-                "Tip: Addition means combining two numbers together.",
-
-            '-' =>
-                "Tip: Subtraction means taking one number away from another.",
-
-            '*' =>
-                "Tip: Multiplication means adding the same number multiple times.",
-
-            '/' =>
-                "Tip: Division means splitting a number into equal groups."
-
+            '+' => "Tip: Addition means combining two numbers together.",
+            '-' => "Tip: Subtraction means taking one number away from another.",
+            '*' => "Tip: Multiplication means adding the same number multiple times.",
+            '/' => "Tip: Division means splitting a number into equal groups."
         ];
 
-        $tip =
-            $tips[$last_op] ?? "";
-    }
+        $tip = $tips[$last_op] ?? "";
 
+        if ($attempts_count >= 3) {
+            $_SESSION['calc_done']++;
+            $show_correct = true;
+            $show_feedback = true;
+            $generate_new = true;
+            $_SESSION['attempts_count'] = 0;
+        }
+    }
 
     /* =====================================================
        5. FASTAPI FEEDBACK
        ===================================================== */
-
+if ($show_feedback) {
     $api_url =
         "http://127.0.0.1:8000/api/v1/feedback";
 
@@ -238,9 +238,10 @@ if (
         $api_feedback =
             "Feedback service is currently unavailable.";
     }
-}
-
-
+}}
+if ($generate_new) {
+    
+$_SESSION['q_start'] = microtime(true);
 /* =========================================================
    6. CHOOSE THE OPERATOR
    ========================================================= */
@@ -271,9 +272,9 @@ if ($operation === 'addition') {
 }
 
 
-/* =========================================================
+/* 
    7. GENERATE A NEW QUESTION
-   ========================================================= */
+   */
 
 
 /* ADDITION */
@@ -378,209 +379,96 @@ while (count($options) < 4) {
 
 
 shuffle($options);
-$_SESSION['q_start'] = microtime(true);
+$_SESSION['attempts_count'] = 0;
+ $_SESSION['current_q'] = compact('operator', 'num1', 'num2', 'correct', 'options');
 
+} else {
+    extract($_SESSION['current_q']);
+}
+if (isset($_GET['exit'])) {
+    $final_score = (int) $_SESSION['calc_score'];
+    $final_right = (int) $_SESSION['calc_right'];
+    $final_done  = (int) $_SESSION['calc_done'];
+    unset($_SESSION['current_q'], $_SESSION['attempts_count']);
+    $_SESSION['calc_score'] = 0;
+    $_SESSION['calc_right'] = 0;
+    $_SESSION['calc_done']  = 0;
 ?>
-
-
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>LearnQuest Mathematics Quiz</title>
-
-   <link rel="stylesheet" href="calculation.css">    
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Round complete</title>
+    <link rel="stylesheet" href="calculation.css">
 </head>
-
-
 <body>
-    <div>
-    <p>
-        Current PHP file:
-        <?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>
-    </p>
+<div class="content"><div class="card">
+    <h2>Well done!</h2>
+    <div class="score-box">
+        Score: <?php echo $final_score; ?> points<br>
+        <?php echo $final_right; ?> of <?php echo $final_done; ?> questions right
+    </div>
+    <a href="dashboard.php" class="btn next-btn">Back to Menu</a>
+</div></div>
+</body>
+</html>
+<?php
+    exit;
+}
 
-    <p>
-        Request method:
-        <?php echo htmlspecialchars($_SERVER['REQUEST_METHOD']); ?>
-    </p>
-
-    <p>
-        Current operation:
-        <?php echo htmlspecialchars($operation); ?>
-    </p>
-</div>
-
-
+$signs = ['+' => '+', '-' => '-', '*' => '&times;', '/' => '&divide;'];
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnQuest Mathematics Quiz</title>
+    <link rel="stylesheet" href="calculation.css">
+</head>
+<body>
 <div class="content">
     <div class="card">
 
+        <a href="dashboard.php" class="btn next-btn">Menu</a>
 
-   
-
-    
-
-<span class="back-link">
-    Menu
-</span>
-
-   
-
-    <?php if ($message): ?>
-
-        <div
-            class="<?php echo htmlspecialchars($message_class); ?>"
-        >
-
-            <?php echo $message; ?>
-
-        </div>
-
-    <?php endif; ?>
-
-
-
-    
-
-    <?php if ($api_feedback): ?>
-
-        <div class="ai-feedback">
-
-            <strong>
-                Learning Feedback:
-            </strong>
-
-            <br><br>
-
-            <?php
-            echo htmlspecialchars(
-                $api_feedback
-            );
-            ?>
-
-        </div>
-
-    <?php endif; ?>
-
-
-
-    
-
-    <?php if ($show_correct): ?>
-
-        <div class="correct-reveal">
-
-            The correct answer was:
-
-            <strong>
-                <?php echo $correct_choice; ?>
-            </strong>
-
-        </div>
-
-
-        <?php if ($tip): ?>
-
-            <div class="tip-box">
-
-                <?php echo htmlspecialchars($tip); ?>
-
-            </div>
-
+        <?php if ($message): ?>
+            <div class="<?php echo htmlspecialchars($message_class); ?>"><?php echo $message; ?></div>
         <?php endif; ?>
 
-    <?php endif; ?>
+        <?php if ($api_feedback): ?>
+            <div class="ai-feedback"><strong>Learning Feedback:</strong><br><br><?php echo htmlspecialchars($api_feedback); ?></div>
+        <?php endif; ?>
 
+        <?php if ($show_correct): ?>
+            <div class="correct-reveal">The correct answer was: <strong><?php echo $correct_choice; ?></strong></div>
+        <?php endif; ?>
 
+        <?php if ($tip): ?>
+            <div class="tip-box"><?php echo htmlspecialchars($tip); ?></div>
+        <?php endif; ?>
 
-    
-    <h2>
-        Solve the Equation
-    </h2>
+        <div class="score-box">
+            Score: <?php echo (int) $_SESSION['calc_score']; ?> points
+            &middot; <?php echo (int) $_SESSION['calc_right']; ?> of <?php echo (int) $_SESSION['calc_done']; ?> right
+        </div>
 
+        <h2>Solve the Equation</h2>
+        <div class="equation"><?php echo $num1 . ' ' . $signs[$operator] . ' ' . $num2 . ' = ?'; ?></div>
+        <br>
 
-    <div class="equation">
+        <form id="quizForm" method="POST" action="calculation.php">
+            <?php foreach ($options as $option): ?>
+                <button type="submit" name="user_answer" value="<?php echo (int) $option; ?>" class="btn"><?php echo (int) $option; ?></button>
+            <?php endforeach; ?>
+        </form>
+        <br>
 
-        <?php
-
-        $display_operator =
-            $operator;
-
-
-        if ($operator === '*') {
-
-            $display_operator =
-                'Ã—';
-        }
-
-
-        if ($operator === '/') {
-
-            $display_operator =
-                'Ã·';
-        }
-
-
-        echo
-            "$num1 $display_operator $num2 = ?";
-
-        ?>
+        <a href="calculation.php?skip=1" class="btn next-btn">Skip Question</a>
+        <a href="calculation.php?exit=1" class="btn exit-btn">Finish &amp; See Score</a>
 
     </div>
-
-
-    <br>
-    <form
-    id="quizForm"
-        method="POST"
-        action="calculation.php"
-    >
-
-
-        <?php foreach ($options as $option): ?>
-
-
-            <button
-                type="submit"
-                name="user_answer"
-                value="<?php echo $option; ?>"
-                class="btn"
-            >
-
-                <?php echo $option; ?>
-
-            </button>
-
-
-        <?php endforeach; ?>
-
-
-    </form>
-
-
-    <br>
-
-    <a
-        href="calculation.php"
-        class="btn next-btn"
-    >
-        Skip Question
-    </a>
-
-
-</div>
-
 </div>
 </body>
-
 </html>
