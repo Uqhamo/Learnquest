@@ -206,20 +206,20 @@
     <form action="register.php" method="post" style="display: contents;">
         <div class="card parent">
             <span class="card-title">I'm a Parent</span>
-            <span class="card-desc">Create & Manage your chold's account</span>
+            <span class="card-desc">Create & Manage your child's account</span>
         <button type="submit" name="parent" class="card-btn btn-parent">Parent Sign Up</button>
         </div>
     </form>
-        <form action="registerchild.php" method="post" style="display: contents;">
+        <form action="login2.php" method="get" style="display: contents;">
     <div class="card child">
 
             <span class="card-title">I'm a Child</span>
-            <span class="card-desc">Join & start playing to learn!</span>
-        <button type ="submit" name="child" class="card-btn btn-child">Child Sign Up</button>
+            <span class="card-desc">Ask your parent to sign in first</span>
+        <button type ="submit" name="child" class="card-btn btn-child">Parent Log In</button>
 </div>
     </form>
 </div>
-    <p class="login-link">Already have an account? <a href="login/php">Log In Here</a></p>
+    <p class="login-link">Already have an account? <a href="login2.php">Log In Here</a></p>
     </div>
 </body>
 </html>

@@ -4,6 +4,7 @@ session_start();
 if (empty($_SESSION['parent_id'])) { header('Location: login2.php'); exit; }
 if (empty($_SESSION['child_id'])) { header('Location: select_child.php'); exit; }
 require_once 'progress_helper.php';
+require_once __DIR__ . '/quiz_helper.php';
 
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
@@ -61,6 +62,8 @@ if (
         ($user_choice === $correct_choice);
  $seconds = microtime(true) - ($_SESSION['q_start'] ?? microtime(true));
     log_attempt('math', $operation, $is_correct, $seconds);
+    $q = $_SESSION['current_q'] ?? [];
+    save_quiz_attempt($_SESSION['child_id'], $operation, $q['operator'] ?? ($_SESSION['last_operator'] ?? ''), $q['num1'] ?? 0, $q['num2'] ?? 0, $correct_choice, $user_choice, $is_correct);
 
     /* =====================================================
        ATTEMPT COUNTER

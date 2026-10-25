@@ -3,6 +3,7 @@ session_start();
 if (empty($_SESSION['parent_id'])) { header('Location: login2.php'); exit; }
 if (empty($_SESSION['child_id'])) { header('Location: select_child.php'); exit; }
 require_once 'progress_helper.php';
+require_once __DIR__ . '/quiz_helper.php';
 require_once __DIR__ . "/database.php"; $family = get_family_report($pdo, $_SESSION["parent_id"]);
 ?>
 <!DOCTYPE html>
@@ -263,35 +264,25 @@ require_once __DIR__ . "/database.php"; $family = get_family_report($pdo, $_SESS
         <h2>LearnQuest</h2>
         </div>
         <nav>
-            <a href="">Profile</a>
+            <a href="profile.php">Profile</a>
             <a href =""> For Parent</a>
             <a href="#" onclick="openProgress();return false;">Progress</a>
         <a href="select_child.php">Switch child</a><a href="logout.php">Logout</a></nav>
     </header>
     <main>
-        <h2 class="greeting">Time to Play & Learn</h2>
-        <p class="subtitle"> Pick an activity to get started!</p>
+        <h2 class="greeting">Time to Play &amp; Learn</h2>
+        <p class="subtitle">Pick an activity to get started!</p>
         <div class="section-label">Choose your Maths Challenge</div>
-        <form action="calculation.php" method="post">
-           
-        <div class = "card-grid">
-        <button type="submit" name="operation" value="addition" class="card-btn addition
-        ">
-        <span class="label">Addition</span>
-        <span class="desc">Numbers gettting bigger!</span>
-    </button><br><br>
-        <button type="submit" name="operation" value="subtration" class="card-btn subtraction">
-            <span class="label" >Subtraction</span>
-            <span class="desc">Taking numbers away!</span>
-        </button><br><br>
-        <button type="submit" name="operation" value= "games" class="games-btn">
-            <div class="info">
-       <span  class="label"> Fun Gamess</span>
-       <span class="desc">All operations mixed Can you handle it?</span>
-            <button type="submit" name="operation" value="mixed" class="card-btn mixed" style="grid-column:1 / -1"><span class="icon">&#127922;</span><span class="label">All Operations</span></button></div>
-       </button>
-        
-        </form><div class="section-label">English</div><a href="spelling.php" class="game-link"><div class="games-btn"><span class="icon">&#9999;&#65039;</span><span class="info"><span class="label">Spelling Challenge</span><span class="desc">Pick the correctly spelled word</span></span></div></a><a href="sentence.php" class="game-link"><div class="games-btn"><span class="icon">&#128221;</span><span class="info"><span class="label">Complete the Sentence</span><span class="desc">Choose the right word</span></span></div></a><a href="opposites.php" class="game-link"><div class="games-btn"><span class="icon">&#128260;</span><span class="info"><span class="label">Opposites Game</span><span class="desc">Find the opposite word</span></span></div></a><a href="unscramble.php" class="game-link"><div class="games-btn"><span class="icon">&#128256;</span><span class="info"><span class="label">Unscramble the Word</span><span class="desc">Put the letters in order</span></span></div></a>
+        <form action="calculation.php" method="post" style="width:100%;max-width:560px;">
+            <div class="card-grid">
+                <button type="submit" name="operation" value="addition" class="card-btn addition"><span class="icon">&#10133;</span><span class="label">Addition</span><span class="desc">Numbers getting bigger!</span></button>
+                <button type="submit" name="operation" value="subtraction" class="card-btn subtraction"><span class="icon">&#10134;</span><span class="label">Subtraction</span><span class="desc">Taking numbers away!</span></button>
+                <button type="submit" name="operation" value="multiplication" class="card-btn multiplication"><span class="icon">&#10006;&#65039;</span><span class="label">Multiplication</span><span class="desc">Groups of numbers!</span></button>
+                <button type="submit" name="operation" value="division" class="card-btn division"><span class="icon">&#10135;</span><span class="label">Division</span><span class="desc">Sharing equally!</span></button>
+            </div>
+        </form>
+        <div class="section-label">Fun Games</div>
+        <a href="fungames.php" class="game-link"><div class="games-btn"><span class="icon">&#127922;</span><span class="info"><span class="label">Fun Games</span><span class="desc">All operations mixed, spelling, sentences and more</span></span></div></a>
 
     <div id="progressModal" class="modal"><div class="modal-box"><button type="button" class="modal-close" onclick="closeProgress()">X</button><h2>My Children</h2><?php if (!$family): ?><p>No child profiles yet.</p><?php endif; ?><?php foreach ($family as $ch): ?><h3 class="child-name"><?php echo htmlspecialchars($ch["name"] . " " . $ch["surname"]); ?> (Grade <?php echo (int) $ch["grade"]; ?>)</h3><?php if (!$ch["report"]): ?><p>No results yet.</p><?php endif; ?><?php foreach ($ch["report"] as $r): ?><div class="progress-card <?php echo htmlspecialchars($r["status"]); ?>"><strong><?php echo htmlspecialchars(ucfirst($r["skill"])); ?></strong> (<?php echo htmlspecialchars(ucfirst($r["subject"])); ?>)<br><?php echo (int) $r["accuracy"]; ?>% correct over <?php echo (int) $r["total"]; ?> questions<p><?php echo htmlspecialchars($r["summary"]); ?></p><p><em><?php echo htmlspecialchars($r["action"]); ?></em></p></div><?php endforeach; ?><?php endforeach; ?></div></div></main>
 <script>function openProgress(){document.getElementById("progressModal").classList.add("open");}function closeProgress(){document.getElementById("progressModal").classList.remove("open");}document.getElementById("progressModal").addEventListener("click",function(e){if(e.target===this){closeProgress();}});</script></body>

@@ -17,3 +17,8 @@ calculation_pre_*.php
 dashboard_pre_*.php
 progress_helper_pre_*.php
 *.pre_guard.bak
+learnquest.db
+*_pre_*.php
+*.bak*
+test_*.php
+clear_attempts.php
