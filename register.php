@@ -1,4 +1,4 @@
-<?php session_start(); require_once __DIR__ . "/database.php"; $error = ""; $success = ""; if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["register"])) { $name = trim($_POST["name"] ?? ""); $surname = trim($_POST["surname"] ?? ""); $email = trim($_POST["email"] ?? ""); $pass = $_POST["pass"] ?? ""; $confirm_pass = $_POST["confirm_pass"] ?? ""; if ($name === "" || $surname === "" || $email === "" || $pass === "") { $error = "Please fill in all fields."; } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) { $error = "Please enter a valid email address."; } elseif (strlen($pass) < 6) { $error = "Password must be at least 6 characters."; } elseif ($pass !== $confirm_pass) { $error = "Passwords do not match."; } else { $check = $pdo->prepare("SELECT 1 FROM parents WHERE email = ? OR username = ?"); $check->execute([$email, $email]); if ($check->fetch()) { $error = "That email is already registered."; } else { $ins = $pdo->prepare("INSERT INTO parents (name, surname, username, email, password_hash) VALUES (?, ?, ?, ?, ?)"); $ins->execute([$name, $surname, $email, $email, password_hash($pass, PASSWORD_DEFAULT)]); session_regenerate_id(true); $_SESSION["parent_id"] = (int) $pdo->lastInsertId(); header("Location: registerchild.php"); exit; } } }
+<?php session_start(); require_once __DIR__ . "/database.php"; require_once __DIR__ . "/password_rules.php"; require_once __DIR__ . "/email_rules.php"; $error = ""; $success = ""; if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["register"])) { $name = trim($_POST["name"] ?? ""); $surname = trim($_POST["surname"] ?? ""); $email = strtolower(trim($_POST["email"] ?? "")); $pass = $_POST["pass"] ?? ""; $confirm_pass = $_POST["confirm_pass"] ?? ""; if ($name === "" || $surname === "" || $email === "" || $pass === "") { $error = "Please fill in all fields."; } elseif (($ee = email_problem($email)) !== "") { $error = $ee; } elseif (($pe = password_problem($pass, $name, $surname, $email)) !== "") { $error = $pe; } elseif ($pass !== $confirm_pass) { $error = "Passwords do not match."; } else { $check = $pdo->prepare("SELECT 1 FROM parents WHERE email = ? OR username = ?"); $check->execute([$email, $email]); if ($check->fetch()) { $error = "That email is already registered."; } else { $ins = $pdo->prepare("INSERT INTO parents (name, surname, username, email, password_hash) VALUES (?, ?, ?, ?, ?)"); $ins->execute([$name, $surname, $email, $email, password_hash($pass, PASSWORD_DEFAULT)]); session_regenerate_id(true); $_SESSION["parent_id"] = (int) $pdo->lastInsertId(); header("Location: registerchild.php"); exit; } } }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -203,8 +203,7 @@
             .card { padding: 28px 20px; }
         }
     </style>
-    </style>
-</head>
+<style id="compact-fit">html,body{min-height:100vh}body{padding:12px 14px !important}.logo,.emoji-row,.stars,.star,.brand .logo{display:none !important}.brand{margin-bottom:10px !important}.brand h2{font-size:1rem !important;margin:0 !important}h1,.brand h1{font-size:1.9rem !important;margin-bottom:4px !important}.brand p,.tagline,.sub,p.sub{font-size:.95rem !important;margin:0 0 10px !important}.card{padding:22px 26px !important;border-width:4px !important;border-radius:22px !important;box-shadow:5px 5px 0 rgba(0,0,0,.18) !important;max-width:440px !important}.card h2{font-size:1.3rem !important;margin-bottom:12px !important}.card-header{margin-bottom:12px !important}label{margin:9px 0 4px !important;font-size:.92rem !important}input,select{padding:11px 13px !important;font-size:1rem !important;border-width:3px !important;border-radius:12px !important}.field,.field-row{margin-bottom:9px !important}.row{gap:11px !important}form br{display:none !important}form button[type=submit]{margin-top:14px !important;padding:13px !important;font-size:1.05rem !important}.hint,p.hint{font-size:.78rem !important;margin-top:3px !important}.err,.ok{padding:9px 12px !important;margin-bottom:9px !important;font-size:.92rem !important}.signup-text,.signin-text,.links{margin-top:12px !important;font-size:.9rem !important}@media (max-height:720px){.card{padding:14px 20px !important}h1,.brand h1{font-size:1.5rem !important}label{margin:5px 0 3px !important}input,select{padding:8px 10px !important}form button[type=submit]{margin-top:9px !important;padding:10px !important}}</style></head>
 <body>
     <div class="content">
     <h1>LearnQuest</h1>
@@ -217,7 +216,7 @@
             </div>
         </div>
     
-    <form action="" method="post">
+    <?php if ($error): ?><div style="background:#FFCDD2;border:3px solid #E53935;color:#C62828;border-radius:12px;padding:10px;font-weight:700;margin-bottom:14px"><?= htmlspecialchars($error) ?></div><?php endif; ?><form action="" method="post">
         <div class="field-row">
             <div class="field">
         <label for="name">Name:</label><br>
@@ -229,9 +228,9 @@
             </div>
         </div>
 <div class="field">
-        <label for="email">Email:</label><br><input type="email" name="email" id="email" placeholder="Your email address" required><br><br></div><div class="field"><label for="pass">Password:</label><br>
-        <input type="password" name="pass" id="pass" placeholder="Create a password" required><br><br>
-        <p class="hint">Use at least 6 characters</p>
+        <label for="email">Email:</label><br><input type="email" name="email" id="email" maxlength="100" placeholder="Your email address" required><br><br></div><div class="field"><label for="pass">Password:</label><br>
+        <input type="password" name="pass" id="pass" placeholder="Create a strong password" minlength="8" autocomplete="new-password" required><br><br>
+        <p class="hint">Use 8 or more characters with a capital letter, a number and a symbol</p>
 </div>
 <div class="field">
         <label for="confirm_pass">Confirm password:</label><br>
@@ -245,5 +244,5 @@
 
     </div>
     </div>
-</body>
+<script id="eye-toggle">(function(){var open='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';var shut='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';document.querySelectorAll("input[type=password]").forEach(function(i){if(i.dataset.eye){return;}i.dataset.eye="1";var w=document.createElement("div");w.style.cssText="position:relative;width:100%";i.parentNode.insertBefore(w,i);w.appendChild(i);i.style.paddingRight="46px";var b=document.createElement("button");b.type="button";b.innerHTML=open;b.setAttribute("aria-label","Show or hide the password");b.title="Show or hide";b.style.cssText="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:auto;margin:0;padding:4px;border:none;border-radius:8px;background:transparent;line-height:0;cursor:pointer;box-shadow:none;border-bottom:none";b.onclick=function(){var s=i.type==="password";i.type=s?"text":"password";b.innerHTML=s?shut:open;};w.appendChild(b);});})();</script></body>
 </html>

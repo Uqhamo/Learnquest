@@ -1,291 +1,93 @@
 <?php
 session_start();
-if (empty($_SESSION['parent_id'])) { header('Location: login2.php'); exit; }
-if (empty($_SESSION['child_id'])) { header('Location: select_child.php'); exit; }
-require_once 'progress_helper.php';
-require_once __DIR__ . '/quiz_helper.php';
-require_once __DIR__ . "/database.php"; $family = get_family_report($pdo, $_SESSION["parent_id"]);
+if (!empty($_SESSION["guest"]) && empty($_SESSION["parent_id"])) { header("Location: play.php"); exit; }
+if (!empty($_SESSION["child_login"]) && empty($_SESSION["parent_id"])) { header("Location: mypage.php"); exit; }
+if (!empty($_SESSION["child_mode"])) { header("Location: mypage.php"); exit; }
+if (empty($_SESSION["parent_id"])) { header("Location: login2.php"); exit; }
+require_once __DIR__ . "/database.php";
+require_once __DIR__ . "/progress_helper.php";
+if (file_exists(__DIR__ . "/quiz_helper.php")) { require_once __DIR__ . "/quiz_helper.php"; }
+function e($v) { return htmlspecialchars((string) $v, ENT_QUOTES, "UTF-8"); }
+$pid = (int) $_SESSION["parent_id"];
+$st = $pdo->prepare("SELECT name FROM parents WHERE id = ?");
+$st->execute([$pid]);
+$parent = $st->fetch();
+$family = get_family_report($pdo, $pid);
+$wq = $pdo->prepare("SELECT COUNT(*) FROM children WHERE pending_parent_id = ? AND parent_id IS NULL");
+$wq->execute([$pid]);
+$waiting = (int) $wq->fetchColumn();
+$names = ["addition" => "Addition", "subtraction" => "Subtraction", "multiplication" => "Multiplication", "division" => "Division", "mixed" => "All Operations", "spelling" => "Spelling", "sentence" => "Sentences", "opposites" => "Opposites", "unscramble" => "Unscramble"];
+$labels = ["mastered" => "Mastered", "proficient" => "Doing well", "good" => "Good", "progressing" => "Progressing", "processing" => "Taking their time", "struggling" => "Needs help", "neutral" => "New"];
+function child_stats($report) { $t = 0; $c = 0; foreach ($report as $r) { $t += (int) $r["total"]; $c += $r["accuracy"] * $r["total"] / 100; } return [$t, $t ? (int) round($c / $t * 100) : 0]; }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DashBoard</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
- 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #FFF176;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-        }
- 
-        
- 
-        /* Floating stars */
-        .star {
-            position: fixed;
-            font-size: 1.4rem;
-            animation: float 4s ease-in-out infinite;
-            opacity: 0.4;
-            z-index: 0;
-            pointer-events: none;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50%       { transform: translateY(-14px) rotate(15deg); }
-        }
- 
-        
-        header {
-            background: linear-gradient(90deg, #FF4081, #FF6D00);
-            padding: 14px 28px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
- 
-        .header-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
- 
-        .header-logo {
-            font-size: 1.8rem;
-            animation: bounce 2s ease-in-out infinite;
-        }
- 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50%       { transform: translateY(-6px); }
-        }
- 
-        header h2 {
-            font-size: 1.6rem;
-            font-weight: 900;
-            color: #fff;
-            letter-spacing: 1px;
-        }
- 
-        nav {
-            display: flex;
-            gap: 6px;
-        }
- 
-        nav a {
-            color: #fff;
-            text-decoration: none;
-            font-size: 0.85rem;
-            font-weight: 700;
-            padding: 8px 14px;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.2);
-            transition: background 0.2s;
-        }
- 
-        nav a:hover {
-            background: rgba(255,255,255,0.38);
-        }
- 
-        
-        main {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 48px 20px 60px;
-        }
- 
-        .greeting {
-            font-size: 2rem;
-            font-weight: 900;
-            background: linear-gradient(90deg, #FF4081, #FF6D00, #AA00FF);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
-            text-align: center;
-        }
- 
-        .subtitle {
-            font-size: 1rem;
-            color: #5D4037;
-            font-weight: 600;
-            margin-bottom: 10px;
-            text-align: center;
-        }
- 
-        .emoji-row {
-            font-size: 1.5rem;
-            letter-spacing: 6px;
-            margin-bottom: 36px;
-        }
- 
-        
-        .section-label {
-            font-size: 0.78rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #8D6E63;
-            width: 100%;
-            max-width: 560px;
-            text-align: left;
-            margin-bottom: 12px;
-        }
- 
-    
-        .card-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-            width: 100%;
-            max-width: 560px;
-            margin-bottom: 18px;
-        }
- 
-        
-        .card-btn {
-            background: #fff;
-            border-radius: 20px;
-            padding: 30px 14px 24px;
-            font-size: 1rem;
-            font-weight: 800;
-            color: #1a1a2e;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px;
-            transition: transform 0.18s, box-shadow 0.18s;
-            border: 3px solid transparent;
-        }
- 
-        .card-btn .icon  { font-size: 2.4rem; }
-        .card-btn .label { font-size: 1rem; font-weight: 900; }
-        .card-btn .desc  { font-size: 0.75rem; color: #999; font-weight: 500; text-align: center; }
- 
-        
-        .card-btn.addition {
-            border-color: #00C853;
-            box-shadow: 4px 4px 0 #00C853;
-        }
-        .card-btn.addition:hover {
-            background: #F1FFF6;
-            transform: translateY(-5px);
-            box-shadow: 6px 8px 0 #00C853;
-        }
- 
-        .card-btn.subtraction {
-            border-color: #FF4081;
-            box-shadow: 4px 4px 0 #FF4081;
-        }
-        .card-btn.subtraction:hover {
-            background: #FFF0F5;
-            transform: translateY(-5px);
-            box-shadow: 6px 8px 0 #FF4081;
-        }
- 
-        .card-btn.multiplication {
-            border-color: #4361ee;
-            box-shadow: 4px 4px 0 #4361ee;
-        }
-        .card-btn.multiplication:hover {
-            background: #EEF0FF;
-            transform: translateY(-5px);
-            box-shadow: 6px 8px 0 #4361ee;
-        }
- 
-        .card-btn.division {
-            border-color: #AA00FF;
-            box-shadow: 4px 4px 0 #AA00FF;
-        }
-        .card-btn.division:hover {
-            background: #F9ECFF;
-            transform: translateY(-5px);
-            box-shadow: 6px 8px 0 #AA00FF;
-        }
- 
-        .card-btn:active { transform: translateY(2px); }
- 
-        
-        .games-btn {
-            width: 100%;
-            max-width: 560px;
-            background: #fff;
-            border: 3px solid #FF6D00;
-            box-shadow: 5px 5px 0 #FF6D00;
-            border-radius: 20px;
-            padding: 22px 28px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            cursor: pointer;
-            transition: transform 0.18s, box-shadow 0.18s;
-            font-family: 'Segoe UI', sans-serif;
-            text-align: left;
-        }
- 
-        .games-btn:hover {
-            background: #FFF3E0;
-            transform: translateY(-5px);
-            box-shadow: 7px 9px 0 #FF6D00;
-        }
- 
-        .games-btn:active { transform: translateY(2px); }
- 
-        .games-btn .icon  { font-size: 3rem; flex-shrink: 0; }
-        .games-btn .info  { display: flex; flex-direction: column; gap: 4px; }
-        .games-btn .label { font-size: 1.15rem; font-weight: 900; color: #FF6D00; }
-        .games-btn .desc  { font-size: 0.82rem; color: #999; font-weight: 500; }
- 
-        @media (max-width: 400px) {
-            .card-grid { grid-template-columns: 1fr; }
-            .greeting  { font-size: 1.5rem; }
-        }
-    .progress-card { background: #fff; border-radius: 15px; border-left: 8px solid #999; padding: 15px; margin: 12px 0; width: 100%; max-width: 560px; }
-.progress-card.mastered, .progress-card.proficient { border-color: #00C853; }
-.progress-card.processing { border-color: #FF6D00; }
-.progress-card.progressing { border-color: #03A9F4; }
-.progress-card.struggling { border-color: #E53935; }
-.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center;padding:20px}.modal.open{display:flex}.modal-box{background:#FFF176;border-radius:20px;padding:24px;max-width:600px;width:100%;max-height:85vh;overflow-y:auto;position:relative}.modal-box h2{color:#FF6D00;margin-bottom:12px}.modal-close{position:absolute;top:12px;right:14px;border:none;background:#FF4081;color:#fff;border-radius:50%;width:32px;height:32px;cursor:pointer;font-weight:bold}.child-name{color:#C2185B;margin:16px 0 4px}.card-btn.mixed{border-color:#FF6D00;box-shadow:4px 4px 0 #FF6D00}.card-btn.mixed:hover{background:#FFF3E0;transform:translateY(-5px);box-shadow:6px 8px 0 #FF6D00}.game-link{display:block;text-decoration:none;width:100%;max-width:560px;margin-bottom:14px}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearnQuest - Parent Dashboard</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: "Segoe UI", sans-serif; background: #F3F6FB; min-height: 100vh; color: #263238; }
+header { background: linear-gradient(90deg, #00897B, #00ACC1); padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; box-shadow: 0 3px 10px rgba(0,0,0,.15); }
+header h2 { color: #fff; font-size: 1.4rem; }
+nav { display: flex; flex-wrap: wrap; gap: 6px; }
+nav a { color: #fff; text-decoration: none; font-size: .85rem; font-weight: 700; padding: 8px 14px; border-radius: 20px; background: rgba(255,255,255,.2); }
+nav a:hover { background: rgba(255,255,255,.38); }
+main { max-width: 820px; margin: 0 auto; padding: 28px 18px 60px; }
+.hello { font-size: 1.7rem; color: #00695C; }
+.sub { color: #607D8B; font-weight: 600; margin: 4px 0 18px; }
+.banner { display: block; background: #FFF8E1; border: 2px solid #FFB300; color: #5D4037; border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; font-weight: 700; text-decoration: none; }
+.attn { background: #FFEBEE; border-left: 6px solid #E53935; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; }
+.attn p { margin-top: 6px; font-size: .9rem; }
+.empty { background: #fff; border-radius: 14px; padding: 18px; margin-bottom: 18px; }
+.child { background: #fff; border-radius: 16px; padding: 18px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.top > div { flex: 1; min-width: 160px; }
+.av { width: 46px; height: 46px; border-radius: 50%; background: #00ACC1; color: #fff; font-weight: 800; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; }
+.child h2 { font-size: 1.15rem; color: #263238; }
+small { color: #78909C; font-weight: 600; }
+.play { background: #00897B; color: #fff; border: none; border-radius: 10px; padding: 9px 14px; font-weight: 700; cursor: pointer; }
+.stats { display: flex; gap: 18px; margin: 12px 0; color: #546E7A; }
+.stats b { color: #00695C; font-size: 1.2rem; }
+.none { color: #90A4AE; }
+.skill { --c: #9E9E9E; border-left: 6px solid var(--c); background: #FAFBFD; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+.skill .row { display: flex; justify-content: space-between; align-items: center; }
+.chip { background: var(--c); color: #fff; border-radius: 12px; padding: 2px 10px; font-size: .75rem; font-weight: 800; }
+.bar { height: 8px; background: #E0E6EC; border-radius: 5px; margin: 6px 0; overflow: hidden; }
+.bar span { display: block; height: 100%; background: var(--c); }
+.skill p { margin-top: 5px; font-size: .9rem; }
+.skill .tip { color: #00695C; font-weight: 600; }
+.s-mastered, .s-proficient { --c: #00A152; }
+.s-good { --c: #7CB342; }
+.s-progressing { --c: #039BE5; }
+.s-processing { --c: #FB8C00; }
+.s-struggling { --c: #E53935; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.actions a { flex: 1; min-width: 140px; text-align: center; text-decoration: none; background: #fff; color: #00695C; font-weight: 800; border: 2px solid #00ACC1; border-radius: 12px; padding: 12px; }
+</style>
 </head>
 <body>
-    <header>
-        <div class="header-brand">
-        <h2>LearnQuest</h2>
-        </div>
-        <nav>
-            <a href="profile.php">Profile</a>
-            <a href =""> For Parent</a>
-            <a href="#" onclick="openProgress();return false;">Progress</a>
-        <a href="select_child.php">Switch child</a><a href="logout.php">Logout</a></nav>
-    </header>
-    <main>
-        <h2 class="greeting">Time to Play &amp; Learn</h2>
-        <p class="subtitle">Pick an activity to get started!</p>
-        <div class="section-label">Choose your Maths Challenge</div>
-        <form action="calculation.php" method="post" style="width:100%;max-width:560px;">
-            <div class="card-grid">
-                <button type="submit" name="operation" value="addition" class="card-btn addition"><span class="icon">&#10133;</span><span class="label">Addition</span><span class="desc">Numbers getting bigger!</span></button>
-                <button type="submit" name="operation" value="subtraction" class="card-btn subtraction"><span class="icon">&#10134;</span><span class="label">Subtraction</span><span class="desc">Taking numbers away!</span></button>
-                <button type="submit" name="operation" value="multiplication" class="card-btn multiplication"><span class="icon">&#10006;&#65039;</span><span class="label">Multiplication</span><span class="desc">Groups of numbers!</span></button>
-                <button type="submit" name="operation" value="division" class="card-btn division"><span class="icon">&#10135;</span><span class="label">Division</span><span class="desc">Sharing equally!</span></button>
-            </div>
-        </form>
-        <div class="section-label">Fun Games</div>
-        <a href="fungames.php" class="game-link"><div class="games-btn"><span class="icon">&#127922;</span><span class="info"><span class="label">Fun Games</span><span class="desc">All operations mixed, spelling, sentences and more</span></span></div></a>
-
-    <div id="progressModal" class="modal"><div class="modal-box"><button type="button" class="modal-close" onclick="closeProgress()">X</button><h2>My Children</h2><?php if (!$family): ?><p>No child profiles yet.</p><?php endif; ?><?php foreach ($family as $ch): ?><h3 class="child-name"><?php echo htmlspecialchars($ch["name"] . " " . $ch["surname"]); ?> (Grade <?php echo (int) $ch["grade"]; ?>)</h3><?php if (!$ch["report"]): ?><p>No results yet.</p><?php endif; ?><?php foreach ($ch["report"] as $r): ?><div class="progress-card <?php echo htmlspecialchars($r["status"]); ?>"><strong><?php echo htmlspecialchars(ucfirst($r["skill"])); ?></strong> (<?php echo htmlspecialchars(ucfirst($r["subject"])); ?>)<br><?php echo (int) $r["accuracy"]; ?>% correct over <?php echo (int) $r["total"]; ?> questions<p><?php echo htmlspecialchars($r["summary"]); ?></p><p><em><?php echo htmlspecialchars($r["action"]); ?></em></p></div><?php endforeach; ?><?php endforeach; ?></div></div></main>
-<script>function openProgress(){document.getElementById("progressModal").classList.add("open");}function closeProgress(){document.getElementById("progressModal").classList.remove("open");}document.getElementById("progressModal").addEventListener("click",function(e){if(e.target===this){closeProgress();}});</script></body>
-
+<header><h2>LearnQuest</h2><nav><a href="profile.php">Profile</a><a href="link_child.php">Link child<?php if ($waiting): ?> (<?= $waiting ?>)<?php endif; ?></a><a href="reset_pin.php">Reset PIN</a><a href="select_child.php">Who is playing</a><a href="parent_teachers.php">Teachers</a><a href="logout.php">Logout</a></nav></header>
+<main>
+<h1 class="hello">Hello, <?= e($parent["name"]) ?></h1>
+<p class="sub">Here is how your children are doing.</p>
+<?php if ($waiting): ?><a href="link_child.php" class="banner">&#128276; <?= (int) $waiting ?> child<?= $waiting > 1 ? "ren want" : " wants" ?> to link to you. Review &rarr;</a><?php endif; ?>
+<?php $attn = []; foreach ($family as $ch) { foreach ($ch["report"] as $r) { if ($r["status"] === "struggling") { $attn[] = [$ch["name"], $r["skill"], $r["action"]]; } } } ?>
+<?php if ($attn): ?><div class="attn"><b>Needs attention</b><?php foreach ($attn as $a): ?><p><?= e($a[0]) ?> &middot; <?= e($names[$a[1]] ?? ucfirst($a[1])) ?>: <?= e($a[2]) ?></p><?php endforeach; ?></div><?php endif; ?>
+<?php if (!$family): ?><div class="empty">No children yet. <a href="registerchild.php">Add your first child</a> or <a href="link_child.php">link a child who signed up on their own</a>.</div><?php endif; ?>
+<?php foreach ($family as $ch): list($tq, $acc) = child_stats($ch["report"]); ?>
+<section class="child">
+<div class="top"><span class="av"><?= e(strtoupper(substr($ch["name"], 0, 1))) ?></span><div><h2><?= e($ch["name"] . " " . $ch["surname"]) ?></h2><small>Grade <?= (int) $ch["grade"] ?> &middot; Age <?= (int) $ch["age"] ?><?php if (!empty($ch["player_code"])): ?> &middot; Player ID <?= e($ch["player_code"]) ?><?php endif; ?></small></div>
+<form method="post" action="select_child.php"><input type="hidden" name="child_id" value="<?= (int) $ch["id"] ?>"><button type="submit" class="play">Let <?= e($ch["name"]) ?> play</button></form></div>
+<div class="stats"><span><b><?= (int) $tq ?></b> questions</span><span><b><?= (int) $acc ?>%</b> correct</span></div>
+<?php if (!$ch["report"]): ?><p class="none">No results yet. Once they play, the report appears here.</p><?php endif; ?>
+<?php foreach ($ch["report"] as $r): ?>
+<div class="skill s-<?= e($r["status"]) ?>"><div class="row"><b><?= e($names[$r["skill"]] ?? ucfirst($r["skill"])) ?></b><span class="chip"><?= e($labels[$r["status"]] ?? "New") ?></span></div><div class="bar"><span style="width: <?= (int) $r["accuracy"] ?>%"></span></div><small><?= (int) $r["accuracy"] ?>% correct in <?= (int) $r["total"] ?> questions</small><p><?= e($r["summary"]) ?></p><p class="tip">Try this: <?= e($r["action"]) ?></p></div>
+<?php endforeach; ?>
+</section>
+<?php endforeach; ?>
+<div class="actions"><a href="registerchild.php">Add a child</a><a href="link_child.php">Link a child</a><a href="reset_pin.php">Reset a PIN</a><a href="profile.php">My profile</a></div>
+</main>
+</body>
 </html>
-

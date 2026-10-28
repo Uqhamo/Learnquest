@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional
 import random
@@ -104,13 +104,13 @@ async def generate_progress_feedback(data: PerformanceData):
         if data.accuracy_rate >= 0.85 and data.avg_response_time < 5.0:
             fb = {'status': 'mastered', 'summary': f'Your child has mastered {data.skill_node}! They are answering both quickly and accurately.', 'action_item': 'Ready to introduce the next complex concept.'}
         elif data.accuracy_rate >= 0.70 and data.avg_response_time > 10.0:
-            fb = {'status': 'processing', 'summary': f'They understand {data.skill_node} well, but are taking their time to think through the steps.', 'action_item': 'Encourage them to practice more to build up fluency and confidence.'}
-        elif data.accuracy_rate >= 0.70:
+            fb = {'status': 'good', 'summary': f'They understand {data.skill_node} well, but are taking their time to think through the steps.', 'action_item': 'Encourage them to practice more to build up fluency and confidence.'}
+        elif data.accuracy_rate >= 0.50:
             fb = {'status': 'progressing', 'summary': f'They are making steady progress with {data.skill_node}.', 'action_item': 'A little more practice will help them become faster and more confident.'}
         else:
             fb = {'status': 'struggling', 'summary': f'They are finding {data.skill_node} a bit challenging right now.', 'action_item': 'Try practicing with visual objects or breaking the problems into smaller steps.'}
     elif sub == 'english':
-        if data.accuracy_rate < 0.70:
+        if data.accuracy_rate < 0.50:
             fb = {'status': 'struggling', 'summary': f'They are working hard, but struggling with {data.skill_node} patterns.', 'action_item': 'Try reading out loud together to reinforce these sound or word patterns.'}
         else:
             fb = {'status': 'proficient', 'summary': f'Showing strong progress in {data.skill_node}.', 'action_item': 'Keep up the current reading routine.'}

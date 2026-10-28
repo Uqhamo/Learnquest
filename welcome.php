@@ -197,7 +197,7 @@
             h1 { font-size: 2rem; }
         }
     </style>
-</head>
+<style id="fit-welcome">html,body{height:100%}body{min-height:100vh;padding:14px 16px !important;overflow:auto !important;justify-content:center}.content{max-width:480px !important}.logo{display:none !important}.emoji-row{display:none !important}h1{font-size:2.4rem !important;margin-bottom:4px !important}.content>h2{font-size:1.1rem !important;margin:0 0 6px !important}.tagline{margin-bottom:6px !important}.who{font-size:1.1rem !important;margin-bottom:14px !important}.card-grid{gap:14px !important}.card{padding:20px 14px 18px !important;gap:9px !important;border-width:4px !important;border-radius:20px !important;box-shadow:4px 4px 0 rgba(0,0,0,.15) !important}.card .card-icon{font-size:2.6rem !important}.card .card-title{font-size:1.05rem !important}.card .card-desc{font-size:.8rem !important;line-height:1.35 !important}.card-btn{padding:11px 10px !important;font-size:.92rem !important;margin-top:3px !important}.login-link,.content>p{margin-top:12px !important;font-size:.9rem !important}@media (max-height:700px){h1{font-size:1.9rem !important}.card{padding:12px 10px !important;gap:6px !important}.card .card-desc{font-size:.72rem !important}.card-btn{padding:8px !important}}@media (max-height:600px){.card .card-desc{display:none !important}}</style></head>
 <body>
     <div class="content">
         <h2>Welcome to LearnQuest</h2>
@@ -210,16 +210,16 @@
         <button type="submit" name="parent" class="card-btn btn-parent">Parent Sign Up</button>
         </div>
     </form>
-        <form action="login2.php" method="get" style="display: contents;">
+        <form action="child_signup.php" method="get" style="display: contents;">
     <div class="card child">
 
             <span class="card-title">I'm a Child</span>
-            <span class="card-desc">Ask your parent to sign in first</span>
-        <button type ="submit" name="child" class="card-btn btn-child">Parent Log In</button>
+            <span class="card-desc">Make your own Player ID</span>
+        <button type ="submit" name="child" class="card-btn btn-child">Child Sign Up</button>
 </div>
     </form>
-</div>
-    <p class="login-link">Already have an account? <a href="login2.php">Log In Here</a></p>
+<form action="teacher_register.php" method="get" style="display: contents;"><div class="card teacher" style="grid-column: 1 / -1; border: 4px solid #4361ee; box-shadow: 5px 5px 0 #3046b8;"><span class="card-title">I'm a Teacher</span><span class="card-desc">Follow your learners progress</span><button type="submit" class="card-btn" style="background:#4361ee;color:#fff;border-bottom:4px solid #3046b8">Teacher Sign Up</button><a href="teacher_login.php" style="color:#4361ee;font-weight:800;text-decoration:none;font-size:0.9rem">Teacher log in</a></div></form></div>
+    <p style="margin-top:18px"><a href="child_login.php" style="color:#C2185B;font-weight:800">Child log in</a></p><p class="login-link">Already have an account? <a href="login2.php">Log In Here</a></p>
     </div>
 </body>
 </html>

@@ -1,11 +1,27 @@
 <?php
 session_start();
-if (empty($_SESSION['parent_id'])) { header('Location: login2.php'); exit; }
-if (empty($_SESSION['child_id']))  { header('Location: select_child.php'); exit; }
+require_once __DIR__ . '/round_helper.php';
+if (empty($_SESSION["parent_id"]) && empty($_SESSION["child_login"]) && empty($_SESSION["guest"])) { header("Location: login2.php"); exit; }
+if (empty($_SESSION["child_id"]) && empty($_SESSION["guest"])) { header("Location: select_child.php"); exit; }
 require_once __DIR__ . '/feedback_helper.php';
 require_once __DIR__ . '/progress_helper.php';
 
 $questions = [
+    ["word" => "PLANET", "options" => ["PLENAT", "PLANET", "PALNET", "PLANTE"], "hint" => "Earth is one of these.", "tip" => "PLANET is spelled P-L-A-N-E-T."],
+    ["word" => "CAMERA", "options" => ["CAMERA", "CAMREA", "CAEMRA", "MACERA"], "hint" => "You use it to take photos.", "tip" => "CAMERA is spelled C-A-M-E-R-A."],
+    ["word" => "ELEPHANT", "options" => ["ELEPHANT", "ELEPHNAT", "ELEHPANT", "ELPEHANT"], "hint" => "The biggest land animal, with a long trunk.", "tip" => "ELEPHANT is spelled E-L-E-P-H-A-N-T."],
+    ["word" => "LIBRARY", "options" => ["LIBARRY", "LIBRARY", "LIBRYAR", "LBIRARY"], "hint" => "A place full of books you can borrow.", "tip" => "LIBRARY is spelled L-I-B-R-A-R-Y."],
+    ["word" => "RIVER", "options" => ["RIVRE", "RIVER", "RVIER", "IRVER"], "hint" => "Water that flows towards the sea.", "tip" => "RIVER is spelled R-I-V-E-R."],
+    ["word" => "MONKEY", "options" => ["MONKEY", "MONEKY", "MOKNEY", "MNOKEY"], "hint" => "An animal that climbs trees and likes bananas.", "tip" => "MONKEY is spelled M-O-N-K-E-Y."],
+    ["word" => "PURPLE", "options" => ["PURPEL", "PURPLE", "PRUPLE", "PUPRLE"], "hint" => "A colour made by mixing red and blue.", "tip" => "PURPLE is spelled P-U-R-P-L-E."],
+    ["word" => "BUTTER", "options" => ["BUTTER", "BUTETR", "BUTTRE", "BUTRET"], "hint" => "A yellow spread you put on bread.", "tip" => "BUTTER has two Ts: B-U-T-T-E-R."],
+    ["word" => "MOTHER", "options" => ["MOHTER", "MOTHER", "MOTEHR", "MTOHER"], "hint" => "A parent who is a woman.", "tip" => "MOTHER is spelled M-O-T-H-E-R."],
+    ["word" => "SISTER", "options" => ["SISTER", "SITSER", "SISTRE", "SSITER"], "hint" => "A girl who has the same parents as you.", "tip" => "SISTER is spelled S-I-S-T-E-R."],
+    ["word" => "ANIMAL", "options" => ["ANIMAL", "AMINAL", "ANIMLA", "NAIMAL"], "hint" => "A living thing like a dog or a cat.", "tip" => "ANIMAL is spelled A-N-I-M-A-L."],
+    ["word" => "FAMILY", "options" => ["FAMLIY", "FAMILY", "FIMALY", "FAMYLI"], "hint" => "The people you live with and love.", "tip" => "FAMILY is spelled F-A-M-I-L-Y."],
+    ["word" => "SUMMER", "options" => ["SUMMER", "SUMEMR", "SUMMRE", "SMUMER"], "hint" => "The hottest season of the year.", "tip" => "SUMMER has two Ms in the middle: S-U-M-M-E-R."],
+    ["word" => "RABBIT", "options" => ["RABIBT", "RABBIT", "RABTIB", "RBABIT"], "hint" => "A small animal with long ears that hops.", "tip" => "RABBIT has two Bs: R-A-B-B-I-T."],
+    ["word" => "WINDOW", "options" => ["WINDOW", "WINODW", "WIDNOW", "WNIDOW"], "hint" => "You look through it, and it lets light into a room.", "tip" => "WINDOW is spelled W-I-N-D-O-W."],
     ["word" => "APPLE", "options" => ["APPLE", "PAPEL", "PLEAP", "APELP"], "hint" => "A fruit that can be red or green.", "tip" => "APPLE is a fruit. Its letters are A-P-P-L-E."],
     ["word" => "SCHOOL", "options" => ["SCOHOL", "SCHOOL", "SCHOLL", "SHCOOL"], "hint" => "A place where children learn.", "tip" => "SCHOOL is where learners attend lessons."],
     ["word" => "HOUSE", "options" => ["HOSUE", "HOUES", "HOUSE", "HOSEU"], "hint" => "A building where people live.", "tip" => "HOUSE is spelled H-O-U-S-E."],
@@ -58,7 +74,7 @@ $game["current"] = $available[array_rand($available)];
 $_SESSION['q_start'] = microtime(true);
 
 $question = $questions[$game["current"]];
-$letters = str_split($question["word"]); do { shuffle($letters); $scrambled = implode("", $letters); } while ($scrambled === $question["word"]); $game["scrambled"] = $scrambled; $options = $question["options"];
+$letters = str_split($question["word"]); do { shuffle($letters); $scrambled = implode("", $letters); } while ($scrambled === $question["word"]); $game["scrambled"] = $scrambled; $round_label = round_gate("unscramble", $message, $api_feedback); if (isset($_GET["finish_round"])) { round_finish("unscramble", $message, $api_feedback); } $options = $question["options"];
 shuffle($options);
 
 function e($value) { return htmlspecialchars((string) $value, ENT_QUOTES, "UTF-8"); }
@@ -119,7 +135,7 @@ h1 { color: #4CAF50; text-align: center; margin-bottom: 10px; }
             <div class="tip">&#128161; <strong>Learning Tip:</strong> <?= e($tip) ?></div>
         <?php endif; ?>
 
-        <div class="question">
+        <?php if (!empty($round_label)): ?><div style="text-align:center;font-weight:800;color:#6A1B9A;background:#F3E5F5;border-radius:12px;padding:8px;margin-bottom:12px"><?= htmlspecialchars($round_label) ?></div><?php endif; ?><div class="question">
             <h2>Unscramble these letters:</h2>
             <div class="word" style="letter-spacing:7px"><?= e($game["scrambled"]) ?></div></div><div style="background:#E1F5FE;border-left:5px solid #03A9F4;border-radius:10px;padding:12px;color:#0277BD;margin-bottom:20px">&#128161; <strong>Hint:</strong> <?= e($question["hint"]) ?>
         </div>
@@ -132,8 +148,8 @@ h1 { color: #4CAF50; text-align: center; margin-bottom: 10px; }
             </div>
         </form>
 
-        <a href="unscramble.php" class="skip">Skip Word &rarr;</a>
+        <a href="unscramble.php" class="skip">Skip Word &rarr;</a><div style="display:flex;gap:10px;margin-top:14px"><a href="dashboard.php" style="flex:1;text-align:center;text-decoration:none;background:#00BCD4;color:#fff;padding:11px;border-radius:12px;font-weight:700">Menu</a><a href="unscramble.php?finish_round=1" style="flex:1;text-align:center;text-decoration:none;background:#E53935;color:#fff;padding:11px;border-radius:12px;font-weight:700">Finish &amp; See Score</a></div>
     </div>
 </div>
-</body>
+<script>(function(){if(!("speechSynthesis" in window)){return;}var b=document.createElement("button");b.type="button";b.textContent="\uD83D\uDD0A Read aloud";b.style.cssText="position:fixed;right:14px;bottom:14px;z-index:60;border:none;border-radius:24px;background:#03A9F4;color:#fff;font-weight:800;padding:12px 16px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.25)";function t(s){var e=document.querySelector(s);return e?e.innerText.replace(/\s+/g," ").trim():"";}b.onclick=function(){if(speechSynthesis.speaking){speechSynthesis.cancel();return;}var q=t(".equation");q=q.replace(/\u00D7/g," times ").replace(/\u00F7/g," divided by ").replace(/\+/g," plus ").replace(/ - /g," minus ").replace(/=\s*\?/," equals what");var sc=document.querySelector(".scrambled");if(sc){q="Unscramble these letters: "+sc.innerText.trim().split("").join(", ");}var o=[];document.querySelectorAll(".answers button, #quizForm button").forEach(function(x){o.push(x.innerText.trim());});var parts=[t(".feedback, .correct, .wrong"),t(".ai-feedback"),t(".tip-box, .tip"),q||t(".question"),t(".hint")];if(o.length){parts.push("The choices are: "+o.join(", "));}var u=new SpeechSynthesisUtterance(parts.filter(Boolean).join(". "));u.lang="en-ZA";u.rate=0.9;speechSynthesis.speak(u);};document.body.appendChild(b);})();</script></body>
 </html>

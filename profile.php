@@ -1,5 +1,6 @@
 <?php
 session_start();
+if (!empty($_SESSION['child_mode'])) { header('Location: mypage.php'); exit; }
 require_once __DIR__ . '/database.php';
 if (empty($_SESSION['parent_id'])) { header('Location: login2.php'); exit; }
 
@@ -8,7 +9,7 @@ $st->execute([$_SESSION['parent_id']]);
 $parent = $st->fetch();
 if (!$parent) { header('Location: logout.php'); exit; }
 
-$st = $pdo->prepare("SELECT id, name, surname, age, grade FROM children WHERE parent_id = ? ORDER BY name");
+$st = $pdo->prepare("SELECT id, name, surname, age, grade, player_code FROM children WHERE parent_id = ? ORDER BY name");
 $st->execute([$_SESSION['parent_id']]);
 $children = $st->fetchAll();
 
@@ -69,14 +70,14 @@ h2 { color: #FF6D00; font-size: 1.2rem; margin-bottom: 12px; }
         <?php if (!$children): ?><p class="empty">No child profiles yet.</p><?php endif; ?>
         <?php foreach ($children as $c): ?>
             <div class="child <?= ((int) $c['id'] === $current) ? 'active' : '' ?>">
-                <span><b><?= e($c['name'] . ' ' . $c['surname']) ?></b><br>Age <?= (int) $c['age'] ?> &middot; Grade <?= (int) $c['grade'] ?></span>
+                <span><b><?= e($c['name'] . ' ' . $c['surname']) ?></b><br>Age <?= (int) $c['age'] ?> &middot; Grade <?= (int) $c['grade'] ?><?php if (!empty($c['player_code'])): ?> &middot; ID <?= e($c['player_code']) ?><?php endif; ?></span>
                 <?php if ((int) $c['id'] === $current): ?><span class="badge">Playing now</span><?php endif; ?>
             </div>
         <?php endforeach; ?>
         <div class="actions">
             <a href="registerchild.php" class="btn add">Add a child</a>
             <a href="select_child.php" class="btn switch">Switch child</a>
-            <a href="logout.php" class="btn logout">Logout</a>
+            <a href="reset_pin.php" class="btn switch">Reset a child PIN</a><a href="logout.php" class="btn logout">Logout</a>
         </div>
     </div>
 </div>

@@ -1,11 +1,30 @@
 <?php
 session_start();
-if (empty($_SESSION['parent_id'])) { header('Location: login2.php'); exit; }
-if (empty($_SESSION['child_id'])) { header('Location: select_child.php'); exit; }
+require_once __DIR__ . '/round_helper.php';
+if (empty($_SESSION["parent_id"]) && empty($_SESSION["child_login"]) && empty($_SESSION["guest"])) { header("Location: login2.php"); exit; }
+if (empty($_SESSION["child_id"]) && empty($_SESSION["guest"])) { header("Location: select_child.php"); exit; }
 require_once 'progress_helper.php';
 require_once 'feedback_helper.php';
 
 $questions = [
+    ["correct" => "Family", "options" => ["Famly", "Family", "Familey", "Fammily"]],
+    ["correct" => "Mother", "options" => ["Mohter", "Mother", "Muther", "Mothar"]],
+    ["correct" => "Father", "options" => ["Fahter", "Fathar", "Father", "Fadher"]],
+    ["correct" => "Sister", "options" => ["Sistar", "Sister", "Sisster", "Sistter"]],
+    ["correct" => "Brother", "options" => ["Brothar", "Brother", "Bruther", "Brotter"]],
+    ["correct" => "Yellow", "options" => ["Yelow", "Yellow", "Yelloe", "Yellaw"]],
+    ["correct" => "Purple", "options" => ["Perple", "Purpel", "Purple", "Purpul"]],
+    ["correct" => "Elephant", "options" => ["Elefant", "Elephant", "Elephent", "Eliphant"]],
+    ["correct" => "Monkey", "options" => ["Monky", "Monkey", "Munkey", "Monkay"]],
+    ["correct" => "Rabbit", "options" => ["Rabit", "Rabbit", "Rabbat", "Rabbitt"]],
+    ["correct" => "Library", "options" => ["Libary", "Library", "Liberry", "Librery"]],
+    ["correct" => "Window", "options" => ["Windoe", "Window", "Windew", "Winndow"]],
+    ["correct" => "Computer", "options" => ["Compuer", "Computer", "Computor", "Compter"]],
+    ["correct" => "Mountain", "options" => ["Montain", "Mountain", "Mountin", "Mounttain"]],
+    ["correct" => "Different", "options" => ["Diferent", "Different", "Diffrent", "Differant"]],
+    ["correct" => "Question", "options" => ["Questoin", "Queston", "Question", "Quesstion"]],
+    ["correct" => "Answer", "options" => ["Anser", "Answer", "Anwser", "Answar"]],
+    ["correct" => "Together", "options" => ["Togather", "Togeter", "Together", "Togethr"]],
     ["correct"=>"Beautiful",
     "options"=>["Beautifull", "Beautiful", "Beutiful", "Beautifal"]
 
@@ -46,7 +65,7 @@ if($_SERVER["REQUEST_METHOD"]=== "POST" && isset($_POST["answer"])){
 $answer = $_POST["answer"];
 $correctAnswer = $_SESSION["spelling_answer"] ?? "";
 $seconds = microtime(true) - ($_SESSION['q_start'] ?? microtime(true));
-log_attempt('english', 'spelling', $answer === $correctAnswer, $seconds);
+log_attempt('english', 'spelling', $answer === $correctAnswer, $seconds); $_SESSION["spelling_total"] = ($_SESSION["spelling_total"] ?? 0) + 1; if ($answer === $correctAnswer) { $_SESSION["spelling_score"] = ($_SESSION["spelling_score"] ?? 0) + 1; }
 
   if ($answer === $correctAnswer) {
         $message = "Correct! Great spelling!";
@@ -76,7 +95,7 @@ $question = $questions[array_rand($questions)];
 $_SESSION["spelling_answer"] = $question["correct"];
 $_SESSION['q_start'] = microtime(true);
 
-$options = $question["options"];
+$round_label = round_gate("spelling", $message, $api_feedback); if (isset($_GET["finish_round"])) { round_finish("spelling", $message, $api_feedback); } $options = $question["options"];
 shuffle($options);
 
 ?>
@@ -276,7 +295,7 @@ shuffle($options);
         <?php echo htmlspecialchars($api_feedback); ?>
     </div>
 <?php endif; ?>
-        <div class="question">
+        <?php if (!empty($round_label)): ?><div style="text-align:center;font-weight:800;color:#6A1B9A;background:#F3E5F5;border-radius:12px;padding:8px;margin-bottom:12px"><?= htmlspecialchars($round_label) ?></div><?php endif; ?><div class="question">
             Which word is spelled correctly?
         </div>
 
@@ -302,11 +321,11 @@ shuffle($options);
 
         </form>
 
-        <a href="spelling.php" class="skip">Skip Word &rarr;</a>
+        <a href="spelling.php" class="skip">Skip Word &rarr;</a><div style="display:flex;gap:10px;margin-top:14px"><a href="dashboard.php" style="flex:1;text-align:center;text-decoration:none;background:#00BCD4;color:#fff;padding:11px;border-radius:12px;font-weight:700">Menu</a><a href="spelling.php?finish_round=1" style="flex:1;text-align:center;text-decoration:none;background:#E53935;color:#fff;padding:11px;border-radius:12px;font-weight:700">Finish &amp; See Score</a></div>
 
     </div>
 
 </div>
 
-</body>
+<script>(function(){if(!("speechSynthesis" in window)){return;}var b=document.createElement("button");b.type="button";b.textContent="\uD83D\uDD0A Read aloud";b.style.cssText="position:fixed;right:14px;bottom:14px;z-index:60;border:none;border-radius:24px;background:#03A9F4;color:#fff;font-weight:800;padding:12px 16px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.25)";function t(s){var e=document.querySelector(s);return e?e.innerText.replace(/\s+/g," ").trim():"";}b.onclick=function(){if(speechSynthesis.speaking){speechSynthesis.cancel();return;}var q=t(".equation");q=q.replace(/\u00D7/g," times ").replace(/\u00F7/g," divided by ").replace(/\+/g," plus ").replace(/ - /g," minus ").replace(/=\s*\?/," equals what");var sc=document.querySelector(".scrambled");if(sc){q="Unscramble these letters: "+sc.innerText.trim().split("").join(", ");}var o=[];document.querySelectorAll(".answers button, #quizForm button").forEach(function(x){o.push(x.innerText.trim());});var parts=[t(".feedback, .correct, .wrong"),t(".ai-feedback"),t(".tip-box, .tip"),q||t(".question"),t(".hint")];if(o.length){parts.push("The choices are: "+o.join(", "));}var u=new SpeechSynthesisUtterance(parts.filter(Boolean).join(". "));u.lang="en-ZA";u.rate=0.9;speechSynthesis.speak(u);};document.body.appendChild(b);})();</script></body>
 </html>

@@ -48,7 +48,7 @@ session_start();
 
         .logo {
             text-align: center;
-            font-size: 65px;
+            font-size: 40px;
         }
 
         h1 {
@@ -87,8 +87,8 @@ session_start();
         }
 
         .game-icon {
-            font-size: 55px;
-            margin-bottom: 10px;
+            font-size: 32px;
+            margin-bottom: 6px;
         }
 
         .game-card h2 {
@@ -137,7 +137,7 @@ session_start();
                 font-size: 2rem;
             }
         }
-    </style>
+    /* compact-games */ body{padding:18px 14px} .container{max-width:620px} .logo{font-size:36px} h1{font-size:1.8rem;margin-bottom:4px} .subtitle{font-size:.95rem;margin-bottom:18px} .games{grid-template-columns:1fr 1fr;gap:12px} .game-card{padding:14px 10px;border-width:3px;border-radius:16px;box-shadow:4px 4px 0 #C2185B} .game-icon{font-size:30px;margin-bottom:4px} .game-card h2{font-size:1rem;margin-bottom:5px} .game-card p{font-size:.82rem;min-height:0;margin-bottom:10px} .play-btn{padding:7px 16px;font-size:.88rem;border-radius:10px} .back-link{padding:7px 14px;margin-bottom:12px;font-size:.9rem}</style>
 </head>
 
 <body>
@@ -161,7 +161,7 @@ session_start();
         
         <div class="game-card">
 
-            <div class="game-icon">🔤</div>
+            <div class="game-icon">&#128292;</div>
 
             <h2>Spelling Challenge</h2>
 
@@ -180,7 +180,7 @@ session_start();
         
         <div class="game-card">
 
-            <div class="game-icon"></div>
+            <div class="game-icon">&#128221;</div>
 
             <h2>Complete the Sentence</h2>
 
@@ -199,7 +199,7 @@ session_start();
         <!-- OPPOSITES -->
         <div class="game-card">
 
-            <div class="game-icon">🔄</div>
+            <div class="game-icon">&#128260;</div>
 
             <h2>Opposites Game</h2>
 
@@ -218,7 +218,7 @@ session_start();
         
         <div class="game-card">
 
-            <div class="game-icon">🔀</div>
+            <div class="game-icon">&#128256;</div>
 
             <h2>Unscramble the Word</h2>
 

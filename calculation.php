@@ -1,8 +1,9 @@
 <?php
 
 session_start();
-if (empty($_SESSION['parent_id'])) { header('Location: login2.php'); exit; }
-if (empty($_SESSION['child_id'])) { header('Location: select_child.php'); exit; }
+require_once __DIR__ . '/round_helper.php';
+if (empty($_SESSION["parent_id"]) && empty($_SESSION["child_login"]) && empty($_SESSION["guest"])) { header("Location: login2.php"); exit; }
+if (empty($_SESSION["child_id"]) && empty($_SESSION["guest"])) { header("Location: select_child.php"); exit; }
 require_once 'progress_helper.php';
 require_once __DIR__ . '/quiz_helper.php';
 
@@ -27,7 +28,7 @@ if (isset($_POST['operation'])) {
 
 $operation = $_SESSION['operation'] ?? 'addition';
 
-$generate_new = !isset($_SESSION['current_q']) || isset($_GET['skip']) || isset($_POST['operation']);
+$skip_msg = ""; $skip_ok = false; if (isset($_GET["skip"]) && isset($_SESSION["current_q"])) { $sk = (int) ($_SESSION["skip_tries"] ?? 0); if ($sk < 2) { $_SESSION["skip_tries"] = $sk + 1; $nudges = ["You can do this! Take a breath, look at the numbers again and pick an answer. Every try makes your brain stronger.", "So close to cracking it! Even grown-ups make mistakes. Try one more time. If it still feels too hard, you can skip next."]; $skip_msg = $nudges[$sk]; } else { $skip_ok = true; } } $generate_new = !isset($_SESSION['current_q']) || $skip_ok || isset($_POST['operation']);
 $show_feedback = false;
 
 
@@ -242,9 +243,9 @@ if ($show_feedback) {
             "Feedback service is currently unavailable.";
     }
 }}
-if ($generate_new) {
+$round_label = round_gate("math", $message, $api_feedback); if ($generate_new) {
     
-$_SESSION['q_start'] = microtime(true);
+$_SESSION['q_start'] = microtime(true); $_SESSION["skip_tries"] = 0;
 /* =========================================================
    6. CHOOSE THE OPERATOR
    ========================================================= */
@@ -414,7 +415,7 @@ if (isset($_GET['exit'])) {
     </div>
     <a href="dashboard.php" class="btn next-btn">Back to Menu</a>
 </div></div>
-</body>
+<script>(function(){if(!("speechSynthesis" in window)){return;}var b=document.createElement("button");b.type="button";b.textContent="\uD83D\uDD0A Read aloud";b.style.cssText="position:fixed;right:14px;bottom:14px;z-index:60;border:none;border-radius:24px;background:#03A9F4;color:#fff;font-weight:800;padding:12px 16px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.25)";function t(s){var e=document.querySelector(s);return e?e.innerText.replace(/\s+/g," ").trim():"";}b.onclick=function(){if(speechSynthesis.speaking){speechSynthesis.cancel();return;}var q=t(".equation");q=q.replace(/\u00D7/g," times ").replace(/\u00F7/g," divided by ").replace(/\+/g," plus ").replace(/ - /g," minus ").replace(/=\s*\?/," equals what");var sc=document.querySelector(".scrambled");if(sc){q="Unscramble these letters: "+sc.innerText.trim().split("").join(", ");}var o=[];document.querySelectorAll(".answers button, #quizForm button").forEach(function(x){o.push(x.innerText.trim());});var parts=[t(".feedback, .correct, .wrong"),t(".ai-feedback"),t(".tip-box, .tip"),q||t(".question"),t(".hint")];if(o.length){parts.push("The choices are: "+o.join(", "));}var u=new SpeechSynthesisUtterance(parts.filter(Boolean).join(". "));u.lang="en-ZA";u.rate=0.9;speechSynthesis.speak(u);};document.body.appendChild(b);})();</script></body>
 </html>
 <?php
     exit;
@@ -457,7 +458,7 @@ $signs = ['+' => '+', '-' => '-', '*' => '&times;', '/' => '&divide;'];
             &middot; <?php echo (int) $_SESSION['calc_right']; ?> of <?php echo (int) $_SESSION['calc_done']; ?> right
         </div>
 
-        <h2>Solve the Equation</h2>
+        <?php if ($skip_msg): ?><div class="motivate">&#127775; <?= htmlspecialchars($skip_msg) ?></div><?php endif; ?><?php if (!empty($round_label)): ?><div style="text-align:center;font-weight:800;color:#6A1B9A;background:#F3E5F5;border-radius:12px;padding:8px;margin-bottom:12px"><?= htmlspecialchars($round_label) ?></div><?php endif; ?><h2>Solve the Equation</h2>
         <div class="equation"><?php echo $num1 . ' ' . $signs[$operator] . ' ' . $num2 . ' = ?'; ?></div>
         <br>
 
@@ -468,10 +469,10 @@ $signs = ['+' => '+', '-' => '-', '*' => '&times;', '/' => '&divide;'];
         </form>
         <br>
 
-        <div class="action-row"><a href="calculation.php?skip=1" class="btn next-btn">Skip Question</a><a href="dashboard.php" class="btn menu-btn">Menu</a></div>
+        <div class="action-row"><a href="calculation.php?skip=1" class="btn next-btn"><?= ((int) ($_SESSION["skip_tries"] ?? 0)) >= 2 ? "Skip anyway" : "Skip Question" ?></a><a href="dashboard.php" class="btn menu-btn">Menu</a></div>
         <a href="calculation.php?exit=1" class="btn exit-btn">Finish &amp; See Score</a>
 
     </div>
 </div>
-</body>
+<script>(function(){if(!("speechSynthesis" in window)){return;}var b=document.createElement("button");b.type="button";b.textContent="\uD83D\uDD0A Read aloud";b.style.cssText="position:fixed;right:14px;bottom:14px;z-index:60;border:none;border-radius:24px;background:#03A9F4;color:#fff;font-weight:800;padding:12px 16px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.25)";function t(s){var e=document.querySelector(s);return e?e.innerText.replace(/\s+/g," ").trim():"";}b.onclick=function(){if(speechSynthesis.speaking){speechSynthesis.cancel();return;}var q=t(".equation");q=q.replace(/\u00D7/g," times ").replace(/\u00F7/g," divided by ").replace(/\+/g," plus ").replace(/ - /g," minus ").replace(/=\s*\?/," equals what");var sc=document.querySelector(".scrambled");if(sc){q="Unscramble these letters: "+sc.innerText.trim().split("").join(", ");}var o=[];document.querySelectorAll(".answers button, #quizForm button").forEach(function(x){o.push(x.innerText.trim());});var parts=[t(".feedback, .correct, .wrong"),t(".ai-feedback"),t(".tip-box, .tip"),q||t(".question"),t(".hint")];if(o.length){parts.push("The choices are: "+o.join(", "));}var u=new SpeechSynthesisUtterance(parts.filter(Boolean).join(". "));u.lang="en-ZA";u.rate=0.9;speechSynthesis.speak(u);};document.body.appendChild(b);})();</script></body>
 </html>
