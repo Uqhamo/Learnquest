@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 if (!empty($_SESSION["guest"]) && empty($_SESSION["parent_id"])) { header("Location: play.php"); exit; }
 if (!empty($_SESSION["child_login"]) && empty($_SESSION["parent_id"])) { header("Location: mypage.php"); exit; }
@@ -68,7 +68,7 @@ small { color: #78909C; font-weight: 600; }
 </style>
 </head>
 <body>
-<header><h2>LearnQuest</h2><nav><a href="profile.php">Profile</a><a href="link_child.php">Link child<?php if ($waiting): ?> (<?= $waiting ?>)<?php endif; ?></a><a href="reset_pin.php">Reset PIN</a><a href="select_child.php">Who is playing</a><a href="parent_teachers.php">Teachers</a><a href="logout.php">Logout</a></nav></header>
+<header><h2>LearnQuest</h2><nav><a href="profile.php">Profile</a><a href="link_child.php">Link child<?php if ($waiting): ?> (<?= $waiting ?>)<?php endif; ?></a><a href="reset_pin.php">Reset PIN</a><a href="select_child.php">Who is playing</a><a href="logout.php">Logout</a></nav></header>
 <main>
 <h1 class="hello">Hello, <?= e($parent["name"]) ?></h1>
 <p class="sub">Here is how your children are doing.</p>
