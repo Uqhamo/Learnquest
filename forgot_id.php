@@ -71,7 +71,7 @@ button { width: 100%; margin-top: 20px; padding: 14px; background: #FF4081; colo
         <input type="password" name="pin" inputmode="numeric" maxlength="6" required>
         <button type="submit">Find my Player ID</button>
     </form>
-    <p class="links"><a href="child_login.php">Back to log in</a></p>
+    <p class="links"><a href="login2.php">Back to log in</a></p>
 </div>
 </body>
 </html>

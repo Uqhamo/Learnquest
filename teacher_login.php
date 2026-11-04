@@ -5,13 +5,16 @@ function e($v) { return htmlspecialchars((string) $v, ENT_QUOTES, "UTF-8"); }
 $error = "";
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $email = strtolower(trim($_POST["email"] ?? ""));
-    $st = $pdo->prepare("SELECT id, password_hash, failed_logins, (locked_until IS NOT NULL AND locked_until > NOW()) AS is_locked FROM teachers WHERE email = ?");
+    $st = $pdo->prepare("SELECT id, password_hash, email_verified, failed_logins, (locked_until IS NOT NULL AND locked_until > NOW()) AS is_locked FROM teachers WHERE email = ?");
     $st->execute([$email]);
     $t = $st->fetch();
     if ($t && $t["is_locked"]) {
         $error = "Too many wrong tries. Please wait 5 minutes.";
     } elseif ($t && password_verify($_POST["pass"] ?? "", $t["password_hash"])) {
         $pdo->prepare("UPDATE teachers SET failed_logins = 0, locked_until = NULL WHERE id = ?")->execute([$t["id"]]);
+        if ((int) $t["email_verified"] === 0) { $_SESSION = []; $_SESSION["verify_pending"] = ["role" => "teacher", "id" => (int) $t["id"]]; header("Location: verify_email.php"); exit; }
+        require_once __DIR__ . "/twostep_helper.php"; $tid2 = (int) $t["id"];
+        if (TWOSTEP_ON && !ts_trusted($pdo, "teacher", $tid2)) { $tq = $pdo->prepare("SELECT name, email FROM teachers WHERE id = ?"); $tq->execute([$tid2]); $tr = $tq->fetch(); if ($tr && ts_send($pdo, "teacher", $tid2, $tr["email"], $tr["name"]) !== "failed") { $_SESSION = []; $_SESSION["login_pending"] = ["role" => "teacher", "id" => $tid2]; header("Location: login_code.php"); exit; } }
         $_SESSION = [];
         session_regenerate_id(true);
         $_SESSION["teacher_id"] = (int) $t["id"];
@@ -56,8 +59,8 @@ button { width: 100%; margin-top: 20px; padding: 14px; background: #4361ee; colo
 <label>Email</label><input type="email" name="email" maxlength="100" value="<?= e($_POST["email"] ?? "") ?>" required>
 <label>Password</label><input type="password" name="pass" autocomplete="current-password" required>
 <button type="submit">Log in</button>
-</form>
-<p class="links"><a href="teacher_register.php">Teacher sign up</a> &middot; <a href="login2.php">Parent or child log in</a></p>
+</form><div style="margin-top:16px;padding:12px;border-top:2px dashed #FFD600;text-align:center;color:#5D4037;font-weight:700"><span>Are you a member yet?</span><a href="welcome.php" style="display:block;margin-top:8px;background:#00BCD4;color:#fff;border-radius:12px;padding:11px;text-decoration:none;font-weight:800">Sign up here</a></div>
+
 </div>
 <script id="eye-toggle">(function(){var open='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';var shut='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';document.querySelectorAll("input[type=password]").forEach(function(i){if(i.dataset.eye){return;}i.dataset.eye="1";var w=document.createElement("div");w.style.cssText="position:relative;width:100%";i.parentNode.insertBefore(w,i);w.appendChild(i);i.style.paddingRight="46px";var b=document.createElement("button");b.type="button";b.innerHTML=open;b.setAttribute("aria-label","Show or hide the password");b.title="Show or hide";b.style.cssText="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:auto;margin:0;padding:4px;border:none;border-radius:8px;background:transparent;line-height:0;cursor:pointer;box-shadow:none;border-bottom:none";b.onclick=function(){var s=i.type==="password";i.type=s?"text":"password";b.innerHTML=s?shut:open;};w.appendChild(b);});})();</script></body>
 </html>

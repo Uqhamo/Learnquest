@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 function email_problem($email) {
     $email = trim((string) $email);
     if ($email === "") { return "Please type your email address."; }

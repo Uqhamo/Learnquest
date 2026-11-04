@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 if (!defined("MAX_TRIES")) { define("MAX_TRIES", 3); }
 function chance_check($game, $is_right) {
     $k = "tries_" . $game;

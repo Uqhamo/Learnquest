@@ -1,4 +1,4 @@
-<?php session_start(); require_once __DIR__ . "/database.php"; require_once __DIR__ . "/password_rules.php"; require_once __DIR__ . "/email_rules.php"; $error = ""; $success = ""; if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["register"])) { $name = trim($_POST["name"] ?? ""); $surname = trim($_POST["surname"] ?? ""); $email = strtolower(trim($_POST["email"] ?? "")); $pass = $_POST["pass"] ?? ""; $confirm_pass = $_POST["confirm_pass"] ?? ""; if ($name === "" || $surname === "" || $email === "" || $pass === "") { $error = "Please fill in all fields."; } elseif (($ee = email_problem($email)) !== "") { $error = $ee; } elseif (($pe = password_problem($pass, $name, $surname, $email)) !== "") { $error = $pe; } elseif ($pass !== $confirm_pass) { $error = "Passwords do not match."; } else { $check = $pdo->prepare("SELECT 1 FROM parents WHERE email = ? OR username = ?"); $check->execute([$email, $email]); if ($check->fetch()) { $error = "That email is already registered."; } else { $ins = $pdo->prepare("INSERT INTO parents (name, surname, username, email, password_hash) VALUES (?, ?, ?, ?, ?)"); $ins->execute([$name, $surname, $email, $email, password_hash($pass, PASSWORD_DEFAULT)]); session_regenerate_id(true); $_SESSION["parent_id"] = (int) $pdo->lastInsertId(); header("Location: registerchild.php"); exit; } } }
+<?php session_start(); require_once __DIR__ . "/database.php"; require_once __DIR__ . "/password_rules.php"; require_once __DIR__ . "/email_rules.php"; $error = ""; $success = ""; if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["register"])) { $name = ucfirst(trim($_POST["name"] ?? "")); $surname = ucfirst(trim($_POST["surname"] ?? "")); $email = strtolower(trim($_POST["email"] ?? "")); $pass = $_POST["pass"] ?? ""; $confirm_pass = $_POST["confirm_pass"] ?? ""; if ($name === "" || $surname === "" || $email === "" || $pass === "") { $error = "Please fill in all fields."; } elseif (($ee = email_problem($email)) !== "") { $error = $ee; } elseif (($pe = password_problem($pass, $name, $surname, $email)) !== "") { $error = $pe; } elseif ($pass !== $confirm_pass) { $error = "Passwords do not match."; } else { $check = $pdo->prepare("SELECT 1 FROM parents WHERE email = ? OR username = ?"); $check->execute([$email, $email]); if ($check->fetch()) { $error = "That email is already registered."; } else { $ins = $pdo->prepare("INSERT INTO parents (name, surname, username, email, password_hash) VALUES (?, ?, ?, ?, ?)"); $ins->execute([$name, $surname, $email, $email, password_hash($pass, PASSWORD_DEFAULT)]); $newid = (int) $pdo->lastInsertId(); require_once __DIR__ . "/verify_helper.php"; vh_send($pdo, "parent", $newid, $email, $name); session_regenerate_id(true); $_SESSION["verify_pending"] = ["role" => "parent", "id" => $newid]; header("Location: verify_email.php"); exit; } } }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -220,11 +220,11 @@
         <div class="field-row">
             <div class="field">
         <label for="name">Name:</label><br>
-        <input type="text" name="name" id="name" placeholder="First name" required><br><br>
+        <input type="text" name="name" style="text-transform:capitalize" id="name" placeholder="First name" required><br><br>
             </div>
             <div class="field">
         <label for="surname">Surname:</label><br>
-        <input type="text" name="surname" id="surname" placeholder="Last Name" required><br><br>
+        <input type="text" name="surname" style="text-transform:capitalize" id="surname" placeholder="Last Name" required><br><br>
             </div>
         </div>
 <div class="field">

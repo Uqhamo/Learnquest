@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 function pin_problem($pin) {
     if (!preg_match("/^\d{4,6}$/", $pin)) { return "The PIN must be 4 to 6 numbers."; }
     if (preg_match("/^(\d)\\1+$/", $pin)) { return "Pick a PIN that is not all the same number."; }

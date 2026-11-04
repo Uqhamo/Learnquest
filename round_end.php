@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 require_once __DIR__ . "/round_helper.php";
 if (empty($_SESSION["round_last"])) { header("Location: dashboard.php"); exit; }

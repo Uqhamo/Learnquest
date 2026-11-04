@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . "/database.php";
-if (empty($_SESSION["teacher_id"])) { header("Location: teacher_login.php"); exit; }
+if (empty($_SESSION["teacher_id"])) { header("Location: login2.php"); exit; }
 function e($v) { return htmlspecialchars((string) $v, ENT_QUOTES, "UTF-8"); }
 $tid = (int) $_SESSION["teacher_id"];
 $msg = ""; $err = "";

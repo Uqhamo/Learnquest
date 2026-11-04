@@ -1,8 +1,8 @@
-﻿<?php
+<?php
 session_start();
 require_once __DIR__ . "/database.php";
 if (!empty($_SESSION["parent_id"]) && empty($_SESSION["child_mode"])) { header("Location: dashboard.php"); exit; }
-if ((empty($_SESSION["child_login"]) && empty($_SESSION["child_mode"])) || empty($_SESSION["child_id"])) { header("Location: child_login.php"); exit; }
+if ((empty($_SESSION["child_login"]) && empty($_SESSION["child_mode"])) || empty($_SESSION["child_id"])) { header("Location: login2.php"); exit; }
 function e($v) { return htmlspecialchars((string) $v, ENT_QUOTES, "UTF-8"); }
 $cid = (int) $_SESSION["child_id"];
 $msg = "";

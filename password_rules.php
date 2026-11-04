@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 function password_problem($pass, $name = "", $surname = "", $email = "") {
     if (strlen($pass) < 8) { return "Password must be at least 8 characters."; }
     if (strlen($pass) > 72) { return "Password is too long (72 characters at most)."; }

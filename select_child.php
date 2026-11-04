@@ -1,8 +1,8 @@
-﻿<?php
+<?php
 session_start();
 require_once __DIR__ . "/database.php";
 if (empty($_SESSION["parent_id"])) { header("Location: login2.php"); exit; }
-if (!empty($_SESSION["child_mode"])) { header("Location: mypage.php"); exit; }
+if (!empty($_SESSION["child_mode"]) && !empty($_SESSION["child_id"])) { header("Location: mypage.php"); exit; } unset($_SESSION["child_mode"]);
 function e($v) { return htmlspecialchars((string) $v, ENT_QUOTES, "UTF-8"); }
 if (isset($_POST["child_id"])) {
     $st = $pdo->prepare("SELECT id, age FROM children WHERE id = ? AND parent_id = ?");

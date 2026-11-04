@@ -42,3 +42,7 @@ _trash/
 LearnQuestBackups/
 dashboard_new.php
 opposites_tips.php
+mail_config.php
+test_mail.php
+phpmailer/
+backup.ps1

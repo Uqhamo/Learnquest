@@ -1,10 +1,13 @@
 <?php
 session_start();
 require_once __DIR__ . '/round_helper.php';
+require_once __DIR__ . '/chances_helper.php';
+require_once __DIR__ . '/round_helper.php';
 if (empty($_SESSION["parent_id"]) && empty($_SESSION["child_login"]) && empty($_SESSION["guest"])) { header("Location: login2.php"); exit; }
 if (empty($_SESSION["child_id"]) && empty($_SESSION["guest"])) { header("Location: select_child.php"); exit; }
 require_once 'progress_helper.php';
 require_once 'feedback_helper.php';
+if (isset($_GET["finish_round"])) { round_finish("sentence", "", ""); }
 
 $questions = [
     ["sentence" => "The birds ___ in the tree every morning.", "correct" => "sing", "options" => ["sing", "sings", "sung", "singing"], "tip" => "'Birds' is plural, so we use 'sing' without an s."],
@@ -79,74 +82,39 @@ if (!isset($_SESSION["sentence_total"])) {
     $_SESSION["sentence_total"] = 0;
 }
 
-$message = "";
-$messageClass = "";
-$explanation = "";
-$api_feedback ="";
-
-if (
-    $_SERVER["REQUEST_METHOD"] === "POST"
-    && isset($_POST["answer"])
-) {
-
-    $answer = $_POST["answer"];
-
-    $correctAnswer =
-        $_SESSION["sentence_answer"] ?? "";
-
-    $previousTip =
-        $_SESSION["sentence_tip"] ?? "";
-
+$message = ""; $messageClass = ""; $explanation = ""; $api_feedback = "";
+$advance = true;
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["answer"]) && isset($_SESSION["sentence_current"])) {
+    $cur = $questions[$_SESSION["sentence_current"]];
+    $answer = (string) $_POST["answer"];
+    $is_right = ($answer === $cur["correct"]);
+    $chance = chance_check("sentence", $is_right);
+    $advance = $chance["advance"];
     $seconds = microtime(true) - ($_SESSION['q_start'] ?? microtime(true));
-    log_attempt('english', 'sentence', $answer === $correctAnswer, $seconds);
-
-    $_SESSION["sentence_total"]++;
-
-    if ($answer === $correctAnswer) {
-
-        $_SESSION["sentence_score"]++;
-
-        $message = "Correct! Great job!";
-        $messageClass = "correct";
-
-        $explanation = $previousTip;
-
+    log_attempt('english', 'sentence', $is_right, $seconds);
+    if ($is_right) {
+        $_SESSION["sentence_total"]++; $_SESSION["sentence_score"]++;
+        $message = "Correct! Great job!"; $messageClass = "correct";
+    } elseif ($chance["reveal"]) {
+        $_SESSION["sentence_total"]++;
+        $message = "Not quite. The correct answer was: " . $cur["correct"]; $messageClass = "wrong";
+        $explanation = $cur["tip"];
     } else {
-
-        $message =
-            "Not quite. The correct answer was: "
-            . htmlspecialchars($correctAnswer);
-
-        $messageClass = "wrong";
-
-        $explanation = $previousTip;
+        $message = "Not quite. Try again! Chances left: " . $chance["left"]; $messageClass = "wrong";
     }
-     $_SESSION['sentence_attempts'] =($_SESSION['sentence_attempts']?? 0)+1;
-    $api_feedback = get_api_feedback(
-        'sentence',
-        $answer === $correctAnswer,
-        $_SESSION['sentence_attempts'],
-        $answer
-    );
-    if($answer === $correctAnswer){
-        $_SESSION['sentence_attempts'] =0;
-    }
+    $_SESSION['sentence_attempts'] = ($_SESSION['sentence_attempts'] ?? 0) + 1;
+    $api_feedback = get_api_feedback('sentence', $is_right, $_SESSION['sentence_attempts'], $answer);
+    if ($advance) { $_SESSION['sentence_attempts'] = 0; }
 }
-
-
-
-$question =
-    $questions[array_rand($questions)];
-
-$_SESSION["sentence_answer"] =
-    $question["correct"];
-
-$_SESSION['q_start'] = microtime(true);
-$_SESSION["sentence_tip"] =
-    $question["tip"];
-
-$round_label = round_gate("sentence", $message, $api_feedback); if (isset($_GET["finish_round"])) { round_finish("sentence", $message, $api_feedback); } $options = $question["options"];
-
+if ($_SERVER["REQUEST_METHOD"] !== "POST" || $advance || !isset($_SESSION["sentence_current"])) {
+    $idx = array_rand($questions);
+    if (isset($_SESSION["sentence_current"]) && count($questions) > 1) { while ($idx === $_SESSION["sentence_current"]) { $idx = array_rand($questions); } }
+    $_SESSION["sentence_current"] = $idx;
+    $_SESSION['q_start'] = microtime(true);
+    chances_reset("sentence");
+}
+$question = $questions[$_SESSION["sentence_current"]];
+$round_label = round_gate("sentence", $message, $api_feedback); $options = $question["options"];
 shuffle($options);
 
 ?>
@@ -339,7 +307,7 @@ h1 {
 
 }
 
-</style>
+</style><style id="fit-game">html,body{height:100%}body{min-height:100vh;padding:8px 10px !important;align-items:flex-start !important}.container{max-width:620px !important}.back{margin-bottom:6px !important;font-size:1rem !important}.card{padding:12px 18px !important;border-width:3px !important;border-radius:18px !important;box-shadow:4px 4px 0 rgba(0,0,0,.2) !important}.icon{display:none !important}h1{font-size:1.5rem !important;margin-bottom:2px !important}.instructions{font-size:.95rem !important;margin-bottom:6px !important}.score,.feedback,.ai-feedback,.tip{padding:6px 10px !important;margin-bottom:6px !important;font-size:.9rem !important;border-radius:10px !important}.question{padding:12px !important;margin-bottom:10px !important;font-size:clamp(1.1rem,4.2vh,1.6rem) !important}.answers{gap:8px !important;grid-template-columns:1fr 1fr !important}.answer{padding:11px !important;font-size:1.2rem !important}.skip{margin-top:8px !important;padding:8px !important;font-size:1rem !important}@media (max-height:760px){.back,.instructions{display:none !important}.ai-feedback,.tip{font-size:.8rem !important}.answer{padding:8px !important}}</style><style id="wrong-css">.wrong{background:#FFCDD2 !important;border:3px solid #E53935 !important;color:#C62828 !important}.correct{background:#C8E6C9 !important;border:3px solid #4CAF50 !important;color:#2E7D32 !important}</style>
 
 </head>
 
@@ -396,7 +364,8 @@ h1 {
 
         
 
-        <?php if ($explanation): ?>
+        <?php if ($api_feedback): ?><div class="ai-feedback"><strong>Learning Feedback:</strong><br><br><?php echo htmlspecialchars($api_feedback); ?></div><?php endif; ?>
+<?php if ($explanation): ?>
 
             <div class="tip">
 

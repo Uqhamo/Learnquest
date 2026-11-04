@@ -27,6 +27,7 @@ if (isset($_POST['operation'])) {
 
 
 $operation = $_SESSION['operation'] ?? 'addition';
+if (in_array($operation, ['factors', 'fractions', 'squareroots'], true)) { require __DIR__ . '/topics_game.php'; exit; }
 
 $skip_msg = ""; $skip_ok = false; if (isset($_GET["skip"]) && isset($_SESSION["current_q"])) { $sk = (int) ($_SESSION["skip_tries"] ?? 0); if ($sk < 2) { $_SESSION["skip_tries"] = $sk + 1; $nudges = ["You can do this! Take a breath, look at the numbers again and pick an answer. Every try makes your brain stronger.", "So close to cracking it! Even grown-ups make mistakes. Try one more time. If it still feels too hard, you can skip next."]; $skip_msg = $nudges[$sk]; } else { $skip_ok = true; } } $generate_new = !isset($_SESSION['current_q']) || $skip_ok || isset($_POST['operation']);
 $show_feedback = false;
@@ -389,6 +390,7 @@ $_SESSION['attempts_count'] = 0;
 } else {
     extract($_SESSION['current_q']);
 }
+if (isset($_GET["exit"])) { require_once __DIR__ . "/round_helper.php"; round_finish("math", $message, $api_feedback); }
 if (isset($_GET['exit'])) {
     $final_score = (int) $_SESSION['calc_score'];
     $final_right = (int) $_SESSION['calc_right'];

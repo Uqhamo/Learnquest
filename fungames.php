@@ -43,7 +43,7 @@ h1 { text-align: center; color: #FF4081; font-size: 2rem; margin-bottom: 6px; }
     <form action="calculation.php" method="POST">
         <button type="submit" name="operation" value="mixed" class="all">
             <span class="icon">&#10133;&#10134;&#10006;&#65039;&#10135;</span>
-            <span><span class="name">All Operations</span><span class="desc">Addition, subtraction, multiplication and division mixed. Can you handle it?</span></span>
+            <span><span class="name">All Operations</span><span class="desc">Sums, times tables, factors, fractions and square roots all mixed. Can you handle it?</span></span>
         </button>
     </form>
 

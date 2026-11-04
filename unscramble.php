@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/chances_helper.php';
 require_once __DIR__ . '/round_helper.php';
 if (empty($_SESSION["parent_id"]) && empty($_SESSION["child_login"]) && empty($_SESSION["guest"])) { header("Location: login2.php"); exit; }
 if (empty($_SESSION["child_id"]) && empty($_SESSION["guest"])) { header("Location: select_child.php"); exit; }
@@ -41,40 +42,45 @@ if (!isset($_SESSION[$key])) {
 $game = &$_SESSION[$key];
 $message = ""; $messageClass = ""; $tip = ""; $api_feedback = "";
 
+$advance = true;
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["answer"]) && $game["current"] !== null) {
     $previous = $questions[$game["current"]];
     $answer   = (string) $_POST["answer"];
     $is_right = ($answer === $previous["word"]);
-    $game["total"]++;
-
+    $chance   = chance_check("unscramble", $is_right);
+    $advance  = $chance["advance"];
     $seconds = microtime(true) - ($_SESSION['q_start'] ?? microtime(true));
     log_attempt('english', 'unscramble', $is_right, $seconds);
-
     if ($is_right) {
-        $game["score"]++;
-        $message = "Correct! You solved the word!";
-        $messageClass = "correct";
+        $game["total"]++; $game["score"]++;
+        $message = "Correct! You solved the word!"; $messageClass = "correct";
+    } elseif ($chance["reveal"]) {
+        $game["total"]++;
+        $message = "Not quite! The correct word was " . $previous["word"] . "."; $messageClass = "wrong";
+        $tip = $previous["tip"];
     } else {
-        $message = "Not quite! The correct word was " . $previous["word"] . ".";
-        $messageClass = "wrong";
+        $message = "Not quite. Try again! Chances left: " . $chance["left"]; $messageClass = "wrong";
     }
-    $tip = $previous["tip"];
-
     $_SESSION['unscramble_attempts'] = ($_SESSION['unscramble_attempts'] ?? 0) + 1;
     $api_feedback = get_api_feedback('unscramble', $is_right, $_SESSION['unscramble_attempts'], $answer);
-    if ($is_right) { $_SESSION['unscramble_attempts'] = 0; }
+    if ($advance) { $_SESSION['unscramble_attempts'] = 0; }
 }
 
 $previousIndex = $game["current"];
-$available = array_keys($questions);
-if ($previousIndex !== null && count($available) > 1) {
-    $available = array_values(array_diff($available, [$previousIndex]));
-}
-$game["current"] = $available[array_rand($available)];
-$_SESSION['q_start'] = microtime(true);
-
-$question = $questions[$game["current"]];
-$letters = str_split($question["word"]); do { shuffle($letters); $scrambled = implode("", $letters); } while ($scrambled === $question["word"]); $game["scrambled"] = $scrambled; $round_label = round_gate("unscramble", $message, $api_feedback); if (isset($_GET["finish_round"])) { round_finish("unscramble", $message, $api_feedback); } $options = $question["options"];
+if ($_SERVER["REQUEST_METHOD"] !== "POST" || $advance || $previousIndex === null) {
+    $available = array_keys($questions);
+    if ($previousIndex !== null && count($available) > 1) { $available = array_values(array_diff($available, [$previousIndex])); }
+    $game["current"] = $available[array_rand($available)];
+    $_SESSION['q_start'] = microtime(true);
+    chances_reset("unscramble");
+    $question = $questions[$game["current"]];
+    $letters = str_split($question["word"]);
+    do { shuffle($letters); $scrambled = implode("", $letters); } while ($scrambled === $question["word"]);
+    $game["scrambled"] = $scrambled;
+} else {
+    $question = $questions[$game["current"]];
+    $scrambled = $game["scrambled"];
+} $round_label = round_gate("unscramble", $message, $api_feedback); if (isset($_GET["finish_round"])) { round_finish("unscramble", $message, $api_feedback); } $options = $question["options"];
 shuffle($options);
 
 function e($value) { return htmlspecialchars((string) $value, ENT_QUOTES, "UTF-8"); }
@@ -112,7 +118,7 @@ h1 { color: #4CAF50; text-align: center; margin-bottom: 10px; }
 .tip { background: #FFF9C4; border-left: 6px solid #FFD600; border-radius: 10px; padding: 15px; margin-bottom: 20px; color: #5D4037; }
 .skip { display: block; margin-top: 20px; padding: 12px; background: #9C27B0; color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: bold; }
 @media (max-width: 500px) { .answers { grid-template-columns: 1fr; } }
-</style>
+</style><style id="fit-game">html,body{height:100%}body{min-height:100vh;padding:8px 10px !important;align-items:flex-start !important}.container{max-width:600px !important}.back{margin-bottom:6px !important;font-size:1rem !important}.card{padding:12px 18px !important;border-width:3px !important;border-radius:18px !important;box-shadow:4px 4px 0 rgba(0,0,0,.2) !important}.icon{display:none !important}h1{font-size:1.5rem !important;margin-bottom:2px !important}.instructions{font-size:.95rem !important;margin-bottom:6px !important}.score,.feedback,.ai-feedback,.tip{padding:6px 10px !important;margin-bottom:6px !important;font-size:.9rem !important;border-radius:10px !important}.question{padding:10px !important;margin-bottom:8px !important}.question h2{font-size:1rem !important;margin-bottom:2px !important}.word{font-size:clamp(1.6rem,6.5vh,2.3rem) !important;letter-spacing:6px !important}.card>div[style*="E1F5FE"]{padding:7px 10px !important;margin-bottom:8px !important;font-size:.95rem !important}.answers{gap:8px !important;grid-template-columns:1fr 1fr !important}.answer{padding:10px !important;font-size:1.15rem !important}.skip{margin-top:8px !important;padding:8px !important;font-size:1rem !important}@media (max-height:760px){.back,.instructions{display:none !important}.ai-feedback,.tip{font-size:.8rem !important}.answer{padding:8px !important}}</style>
 </head>
 <body>
 <div class="container">

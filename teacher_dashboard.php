@@ -1,14 +1,14 @@
-﻿<?php
+<?php
 session_start();
 require_once __DIR__ . "/database.php";
 require_once __DIR__ . "/progress_helper.php";
-if (empty($_SESSION["teacher_id"])) { header("Location: teacher_login.php"); exit; }
+if (empty($_SESSION["teacher_id"])) { header("Location: login2.php"); exit; }
 function e($v) { return htmlspecialchars((string) $v, ENT_QUOTES, "UTF-8"); }
 $tid = (int) $_SESSION["teacher_id"];
 $st = $pdo->prepare("SELECT name, surname, school FROM teachers WHERE id = ?");
 $st->execute([$tid]);
 $teacher = $st->fetch();
-if (!$teacher) { $_SESSION = []; header("Location: teacher_login.php"); exit; }
+if (!$teacher) { $_SESSION = []; header("Location: login2.php"); exit; }
 $st = $pdo->prepare("SELECT id, name, surname, age, grade, (parent_id IS NOT NULL) AS has_parent FROM children WHERE teacher_id = ? ORDER BY grade, name");
 $st->execute([$tid]);
 $learners = $st->fetchAll();
@@ -73,7 +73,7 @@ small { color: #78909C; font-weight: 600; }
 </style>
 </head>
 <body>
-<header><h2>LearnQuest Teacher</h2><nav><a href="teacher_link.php">Learners<?php if ($waiting): ?> (<?= $waiting ?>)<?php endif; ?></a><a href="logout.php">Logout</a></nav></header>
+<header><h2>LearnQuest Teacher</h2><nav><a href="teacher_link.php">Learners<?php if ($waiting): ?> (<?= $waiting ?>)<?php endif; ?></a><a href="download_report.php">Download report</a><a href="logout.php">Logout</a></nav></header>
 <main>
 <h1 class="hello">Hello, <?= e($teacher["name"]) ?></h1>
 <p class="sub"><?= e($teacher["school"]) ?> &middot; <?= count($learners) ?> learner<?= count($learners) === 1 ? "" : "s" ?> linked to you</p>

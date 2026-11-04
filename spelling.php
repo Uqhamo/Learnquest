@@ -1,7 +1,10 @@
 <?php
 session_start();
+
+require_once __DIR__ . '/chances_helper.php';
 require_once __DIR__ . '/round_helper.php';
 if (empty($_SESSION["parent_id"]) && empty($_SESSION["child_login"]) && empty($_SESSION["guest"])) { header("Location: login2.php"); exit; }
+if (isset($_GET["finish_round"])) { round_finish("spelling", "", ""); }
 if (empty($_SESSION["child_id"]) && empty($_SESSION["guest"])) { header("Location: select_child.php"); exit; }
 require_once 'progress_helper.php';
 require_once 'feedback_helper.php';
@@ -56,47 +59,42 @@ $questions = [
     ]
 
 ];
-$message = "";
-$api_feedback ="";
-$messageClass = "";
-
-if($_SERVER["REQUEST_METHOD"]=== "POST" && isset($_POST["answer"])){
-
-$answer = $_POST["answer"];
-$correctAnswer = $_SESSION["spelling_answer"] ?? "";
-$seconds = microtime(true) - ($_SESSION['q_start'] ?? microtime(true));
-log_attempt('english', 'spelling', $answer === $correctAnswer, $seconds); $_SESSION["spelling_total"] = ($_SESSION["spelling_total"] ?? 0) + 1; if ($answer === $correctAnswer) { $_SESSION["spelling_score"] = ($_SESSION["spelling_score"] ?? 0) + 1; }
-
-  if ($answer === $correctAnswer) {
-        $message = "Correct! Great spelling!";
-        $messageClass = "correct";
+$message = ""; $messageClass = ""; $api_feedback = "";
+$advance = true;
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["answer"]) && isset($_SESSION["spelling_answer"])) {
+    $answer = (string) $_POST["answer"];
+    $correctAnswer = $_SESSION["spelling_answer"];
+    $is_right = ($answer === $correctAnswer);
+    $chance = chance_check("spelling", $is_right);
+    $advance = $chance["advance"];
+    $seconds = microtime(true) - ($_SESSION['q_start'] ?? microtime(true));
+    log_attempt('english', 'spelling', $is_right, $seconds);
+    if ($is_right) {
+        $_SESSION["spelling_total"] = ($_SESSION["spelling_total"] ?? 0) + 1;
+        $_SESSION["spelling_score"] = ($_SESSION["spelling_score"] ?? 0) + 1;
+        $message = "Correct! Great spelling!"; $messageClass = "correct";
+    } elseif ($chance["reveal"]) {
+        $_SESSION["spelling_total"] = ($_SESSION["spelling_total"] ?? 0) + 1;
+        $message = "Not quite. The correct spelling was: " . htmlspecialchars($correctAnswer); $messageClass = "wrong";
     } else {
-        $message = "Not quite. The correct spelling was: "
-                 . htmlspecialchars($correctAnswer);
-        $messageClass = "wrong";
+        $message = "Not quite. Try again! Chances left: " . $chance["left"]; $messageClass = "wrong";
     }
-
     $_SESSION['spelling_attempts'] = ($_SESSION['spelling_attempts'] ?? 0) + 1;
-
-    $api_feedback = get_api_feedback(
-        'spelling',
-        $answer === $correctAnswer,
-        $_SESSION['spelling_attempts'],
-        $answer
-    );
-
-    if ($answer === $correctAnswer) {
-        $_SESSION['spelling_attempts'] = 0;
-    }
+    $api_feedback = get_api_feedback('spelling', $is_right, $_SESSION['spelling_attempts'], $answer);
+    if ($advance) { $_SESSION['spelling_attempts'] = 0; }
 }
-
-$question = $questions[array_rand($questions)];
-
-$_SESSION["spelling_answer"] = $question["correct"];
-$_SESSION['q_start'] = microtime(true);
-
-$round_label = round_gate("spelling", $message, $api_feedback); if (isset($_GET["finish_round"])) { round_finish("spelling", $message, $api_feedback); } $options = $question["options"];
+if ($_SERVER["REQUEST_METHOD"] !== "POST" || $advance || !isset($_SESSION["spelling_current"])) {
+    $idx = array_rand($questions);
+    if (isset($_SESSION["spelling_current"]) && count($questions) > 1) { while ($idx === $_SESSION["spelling_current"]) { $idx = array_rand($questions); } }
+    $_SESSION["spelling_current"] = $idx;
+    $_SESSION["spelling_answer"] = $questions[$idx]["correct"];
+    $_SESSION['q_start'] = microtime(true);
+    chances_reset("spelling");
+}
+$question = $questions[$_SESSION["spelling_current"]];
+$options = $question["options"];
 shuffle($options);
+$round_label = round_gate("spelling", $message, $api_feedback);
 
 ?>
 <!DOCTYPE html>
@@ -261,7 +259,7 @@ shuffle($options);
             }
         }
 
-    .wrong, .wrong-fix { background: #FFCDD2; border: 3px solid #E53935; color: #C62828; }</style>
+    .wrong, .wrong-fix { background: #FFCDD2; border: 3px solid #E53935; color: #C62828; }</style><style id="fit-game">html,body{height:100%}body{min-height:100vh;padding:12px 12px !important}.container{max-width:620px !important}.back{margin-bottom:10px !important;font-size:1.05rem !important}.card{padding:22px 24px !important;border-width:4px !important;border-radius:22px !important;box-shadow:5px 5px 0 rgba(0,0,0,.2) !important}.icon{font-size:38px !important;margin-bottom:2px !important}h1{font-size:1.9rem !important;margin-bottom:6px !important}.instructions{font-size:1.1rem !important;margin-bottom:12px !important}.score,.feedback,.ai-feedback,.tip{padding:10px 12px !important;margin-bottom:12px !important;font-size:1.05rem !important;border-radius:12px !important}.question{padding:18px !important;margin-bottom:14px !important;font-size:clamp(1.3rem,4.6vh,1.8rem) !important}.question h2{font-size:1.3rem !important;margin-bottom:6px !important}.word{font-size:clamp(1.8rem,7vh,2.4rem) !important}.card>div[style*="E1F5FE"]{padding:10px !important;margin-bottom:12px !important;font-size:1.05rem !important}.answers{gap:12px !important;grid-template-columns:1fr 1fr !important}.answer{padding:14px !important;font-size:1.3rem !important}.skip{margin-top:14px !important;padding:11px !important;font-size:1.15rem !important}@media (max-height:760px){.icon{display:none !important}.card{padding:16px 20px !important}.answer{padding:11px !important;font-size:1.2rem !important}.ai-feedback,.tip{font-size:.92rem !important}h1{font-size:1.6rem !important}}@media (max-height:640px){.back,.instructions{display:none !important}}</style><style id="wrong-css">.wrong{background:#FFCDD2 !important;border:3px solid #E53935 !important;color:#C62828 !important}.correct{background:#C8E6C9 !important;border:3px solid #4CAF50 !important;color:#2E7D32 !important}</style>
 
 </head>
 
