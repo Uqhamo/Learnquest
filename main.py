@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional
 import random
+from skill_tips import skill_tip
 
 app = FastAPI(title="LearnQuestFeedbackAPI", version="1.1.0")
 
@@ -114,5 +115,6 @@ async def generate_progress_feedback(data: PerformanceData):
             fb = {'status': 'struggling', 'summary': f'They are working hard, but struggling with {data.skill_node} patterns.', 'action_item': 'Try reading out loud together to reinforce these sound or word patterns.'}
         else:
             fb = {'status': 'proficient', 'summary': f'Showing strong progress in {data.skill_node}.', 'action_item': 'Keep up the current reading routine.'}
+    fb['action_item'] = skill_tip(str(data.skill_node).lower(), fb['status'], fb.get('action_item', ''))
     return fb
 
