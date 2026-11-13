@@ -89,5 +89,5 @@ button.alt { background: #546E7A; }
 <form method="post"><input type="hidden" name="action" value="resend"><button type="submit" class="alt">Send a new code</button></form>
 <?php endif; ?>
 </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

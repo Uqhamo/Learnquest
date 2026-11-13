@@ -18,7 +18,7 @@ $today = (new DateTime("now", $tz))->format("Y-m-d");
 $yest = (new DateTime("yesterday", $tz))->format("Y-m-d");
 $cur = $weeks[$thisMon] ?? ["start" => $thisMon, "total" => 0, "right" => 0, "days" => [], "skills" => []];
 $curPct = $cur["total"] ? (int) round($cur["right"] / $cur["total"] * 100) : 0;
-$recent = array_slice($rows, 0, 20);
+$recent = array_slice($rows, 0, 20); $signs = ["+" => "+", "-" => "-", "*" => "&times;", "/" => "&divide;"]; $fq = $pdo->prepare("SELECT num1, num2, operator, correct_answer, user_answer FROM quiz_attempts WHERE child_id = ? AND is_correct = 0 ORDER BY id DESC LIMIT 8"); $fq->execute([$cid]); $mistakes = $fq->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -62,8 +62,8 @@ h2 { color: #FF6D00; font-size: 1.1rem; margin: 18px 0 8px; }
 <?php foreach ($weeks as $w): $p = $w["total"] ? (int) round($w["right"] / $w["total"] * 100) : 0; ?>
 <div class="wk"><b>Week of <?= e(DateTime::createFromFormat("Y-m-d", $w["start"])->format("j M")) ?></b> &middot; <?= (int) $w["total"] ?> questions &middot; <?= $p ?>% right<div class="bar"><span style="width: <?= $p ?>%"></span></div></div>
 <?php endforeach; ?>
-<h2>What I did lately</h2>
+<h2>Let's fix these</h2><?php if (!$mistakes): ?><p>No maths mistakes to fix yet. Well done!</p><?php endif; ?><?php foreach ($mistakes as $x): ?><div class="log miss"><?= (int) $x["num1"] ?> <?= $signs[$x["operator"]] ?? e($x["operator"]) ?> <?= (int) $x["num2"] ?> = <b><?= (int) $x["correct_answer"] ?></b><small>you chose <?= (int) $x["user_answer"] ?></small></div><?php endforeach; ?><h2>What I did lately</h2>
 <?php foreach ($recent as $r): ?><div class="log <?= $r["is_correct"] ? "good" : "miss" ?>"><?= $r["is_correct"] ? "&#10004;" : "&#10006;" ?> <b><?= e($names[$r["skill"]] ?? ucfirst($r["skill"])) ?></b><small><?= e(day_label($r["when"], $today, $yest)) ?></small></div><?php endforeach; ?>
 </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

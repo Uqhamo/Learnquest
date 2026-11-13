@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . "/database.php";
-if (!empty($_SESSION["parent_id"]) && empty($_SESSION["child_mode"])) { header("Location: dashboard.php"); exit; }
+if (!empty($_SESSION["parent_id"]) && empty($_SESSION["child_mode"])) { header("Location: parent_dashboard.php"); exit; }
 if ((empty($_SESSION["child_login"]) && empty($_SESSION["child_mode"])) || empty($_SESSION["child_id"])) { header("Location: login2.php"); exit; }
 function e($v) { return htmlspecialchars((string) $v, ENT_QUOTES, "UTF-8"); }
 $cid = (int) $_SESSION["child_id"];
@@ -73,5 +73,5 @@ a.back { display: block; text-align: center; margin-top: 16px; color: #6A1B9A; f
 <?php else: ?><form method="post"><input type="hidden" name="action" value="teacher"><label>Teacher email</label><input type="email" name="email" maxlength="100" required><button type="submit" class="teach">Ask my teacher</button></form><?php endif; ?>
 <a href="mypage.php" class="back">&larr; Back to my page</a>
 </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

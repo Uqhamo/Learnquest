@@ -11,6 +11,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     else {
         $do = $_POST["do"] ?? ""; $id = (int) ($_POST["id"] ?? 0);
         if ($do === "approve_teacher") { $pdo->prepare("UPDATE teachers SET approved = 1 WHERE id = ?")->execute([$id]); admin_log($pdo, "approve teacher", "#" . $id); $msg = "Teacher approved."; }
+        elseif ($do === "approve_parent") { $pdo->prepare("UPDATE parents SET approved = 1 WHERE id = ?")->execute([$id]); admin_log($pdo, "approve parent", "#" . $id); $msg = "Parent approved."; }
         elseif ($do === "toggle_parent") { $pdo->prepare("UPDATE parents SET disabled = 1 - disabled WHERE id = ?")->execute([$id]); admin_log($pdo, "lock/unlock parent", "#" . $id); $msg = "Parent account updated."; }
         elseif ($do === "toggle_teacher") { $pdo->prepare("UPDATE teachers SET disabled = 1 - disabled WHERE id = ?")->execute([$id]); admin_log($pdo, "lock/unlock teacher", "#" . $id); $msg = "Teacher account updated."; }
         elseif ($do === "toggle_child") { $pdo->prepare("UPDATE children SET disabled = 1 - disabled WHERE id = ?")->execute([$id]); admin_log($pdo, "lock/unlock child", "#" . $id); $msg = "Child account updated."; }
@@ -46,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 $like = "%" . $q . "%";
-if ($tab === "parents") { $st = $pdo->prepare("SELECT id, name, surname, email, email_verified, disabled, created_at, (SELECT COUNT(*) FROM children c WHERE c.parent_id = parents.id) AS kids FROM parents WHERE name LIKE ? OR surname LIKE ? OR email LIKE ? ORDER BY id DESC LIMIT 100"); $st->execute([$like, $like, $like]); }
+if ($tab === "parents") { $st = $pdo->prepare("SELECT id, name, surname, email, email_verified, disabled, approved, created_at, (SELECT COUNT(*) FROM children c WHERE c.parent_id = parents.id) AS kids FROM parents WHERE name LIKE ? OR surname LIKE ? OR email LIKE ? ORDER BY id DESC LIMIT 100"); $st->execute([$like, $like, $like]); }
 elseif ($tab === "teachers") { $st = $pdo->prepare("SELECT id, name, surname, email, school, email_verified, approved, disabled, created_at, (SELECT COUNT(*) FROM children c WHERE c.teacher_id = teachers.id) AS kids FROM teachers WHERE name LIKE ? OR surname LIKE ? OR email LIKE ? OR school LIKE ? ORDER BY approved ASC, id DESC LIMIT 100"); $st->execute([$like, $like, $like, $like]); }
 else { $st = $pdo->prepare("SELECT c.id, c.name, c.surname, c.grade, c.age, c.player_code, c.disabled, c.created_at, c.parent_id, c.teacher_id, p.name AS pname, t.name AS tname FROM children c LEFT JOIN parents p ON p.id = c.parent_id LEFT JOIN teachers t ON t.id = c.teacher_id WHERE c.name LIKE ? OR c.surname LIKE ? OR c.player_code LIKE ? OR p.email LIKE ? ORDER BY c.id DESC LIMIT 100"); $st->execute([$like, $like, $like, $like]); }
 $rows = $st->fetchAll();
@@ -86,7 +87,7 @@ form.inl input[type=text], form.inl input[type=password] { width: 80px; padding:
 </style><style id="admin-actions-css">td.acts{min-width:230px;width:260px}td.acts .ar{display:flex;align-items:center;gap:6px;padding:5px 0;border-top:1px solid #ECEFF1}td.acts .ar:first-child{border-top:none}td.acts form.inl{display:flex;align-items:center;gap:6px;margin:0;width:100%}td.acts form.inl button{min-width:104px;text-align:center}td.acts form.inl input[type=password]{width:80px;flex:0 0 auto}td.acts .ar.danger{margin-top:6px;padding-top:8px;border-top:2px solid #FFCDD2}td.acts .ar.danger button{width:100%}td.acts .ar:empty{display:none}</style>
 </head>
 <body>
-<header><strong>LearnQuest Admin</strong><nav><a href="admin_dashboard.php">Home</a><a href="admin_accounts.php?tab=parents" class="<?= $tab === "parents" ? "on" : "" ?>">Parents</a><a href="admin_accounts.php?tab=teachers" class="<?= $tab === "teachers" ? "on" : "" ?>">Teachers</a><a href="admin_accounts.php?tab=children" class="<?= $tab === "children" ? "on" : "" ?>">Children</a><a href="admin_admins.php">Admins</a><a href="admin_logout.php">Log out (<?= e($admin["name"]) ?>)</a></nav></header>
+<header><strong>LearnQuest Admin</strong><nav><a href="admin_dashboard.php">Home</a><a href="admin_accounts.php?tab=parents" class="<?= $tab === "parents" ? "on" : "" ?>">Parents</a><a href="admin_accounts.php?tab=teachers" class="<?= $tab === "teachers" ? "on" : "" ?>">Teachers</a><a href="admin_accounts.php?tab=children" class="<?= $tab === "children" ? "on" : "" ?>">Children</a><a href="admin_links.php">Link requests</a><?php if (!empty($admin["is_super"])): ?><a href="admin_admins.php">Admins</a><a href="admin_check.php">System check</a><?php endif; ?><a href="admin_logout.php">Log out (<?= e($admin["name"]) ?>)</a></nav></header>
 <main>
 <h1><?= e(ucfirst($tab)) ?></h1>
 <?php if ($msg): ?><div class="ok"><?= e($msg) ?></div><?php endif; ?>
@@ -95,7 +96,7 @@ form.inl input[type=text], form.inl input[type=password] { width: 80px; padding:
 <div class="wrapx"><table>
 <?php if ($tab === "parents"): ?>
 <tr><th>Name</th><th>Email</th><th>Children</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
-<?php foreach ($rows as $r): ?><tr><td><?= e($r["name"] . " " . $r["surname"]) ?></td><td><?= e($r["email"]) ?><small><?= $r["email_verified"] ? "email verified" : "not verified" ?></small></td><td><?= (int) $r["kids"] ?></td><td><?= $r["disabled"] ? "<span class=\"tag bad2\">locked</span>" : "<span class=\"tag good\">active</span>" ?></td><td><?= e(substr($r["created_at"], 0, 10)) ?></td><td><?= act($r["disabled"] ? "Unlock" : "Lock", "toggle_parent", $r["id"], $r["disabled"] ? "go" : "red") ?><?= act("Delete account", "delete_parent", $r["id"], "red", "<input type=\"text\" name=\"confirm\" placeholder=\"type DELETE\" required>") ?></td></tr><?php endforeach; ?>
+<?php foreach ($rows as $r): ?><tr><td><?= e($r["name"] . " " . $r["surname"]) ?></td><td><?= e($r["email"]) ?><small><?= ($r["email_verified"] ? "email verified" : "not verified") . ($r["approved"] ? "" : " - WAITING FOR APPROVAL") ?></small></td><td><?= (int) $r["kids"] ?></td><td><?= $r["disabled"] ? "<span class=\"tag bad2\">locked</span>" : "<span class=\"tag good\">active</span>" ?></td><td><?= e(substr($r["created_at"], 0, 10)) ?></td><td><?= !$r["approved"] ? act("Approve", "approve_parent", $r["id"], "go") : "" ?><?= act($r["disabled"] ? "Unlock" : "Lock", "toggle_parent", $r["id"], $r["disabled"] ? "go" : "red") ?><?= act("Delete account", "delete_parent", $r["id"], "red", "<input type=\"text\" name=\"confirm\" placeholder=\"type DELETE\" required>") ?></td></tr><?php endforeach; ?>
 <?php elseif ($tab === "teachers"): ?>
 <tr><th>Name</th><th>School / email</th><th>Learners</th><th>Status</th><th>Joined</th><th>Actions</th></tr>
 <?php foreach ($rows as $r): ?><tr><td><?= e($r["name"] . " " . $r["surname"]) ?></td><td><?= e($r["school"]) ?><small><?= e($r["email"]) ?></small></td><td><?= (int) $r["kids"] ?></td><td><?= $r["approved"] ? "<span class=\"tag good\">approved</span>" : "<span class=\"tag warn\">waiting</span>" ?> <?= $r["disabled"] ? "<span class=\"tag bad2\">locked</span>" : "" ?></td><td><?= e(substr($r["created_at"], 0, 10)) ?></td><td><?= !$r["approved"] ? act("Approve", "approve_teacher", $r["id"], "go") : "" ?><?= act($r["disabled"] ? "Unlock" : "Lock", "toggle_teacher", $r["id"], $r["disabled"] ? "go" : "red") ?><?= act("Delete account", "delete_teacher", $r["id"], "red", "<input type=\"text\" name=\"confirm\" placeholder=\"type DELETE\" required>") ?></td></tr><?php endforeach; ?>
@@ -111,5 +112,5 @@ form.inl input[type=text], form.inl input[type=password] { width: 80px; padding:
 </table></div>
 <?php if (!$rows): ?><p style="margin-top:12px;color:#78909C">Nothing found.</p><?php endif; ?>
 </main>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

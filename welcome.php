@@ -210,16 +210,9 @@
         <button type="submit" name="parent" class="card-btn btn-parent">Parent Sign Up</button>
         </div>
     </form>
-        <form action="child_signup.php" method="get" style="display: contents;">
-    <div class="card child">
-
-            <span class="card-title">I'm a Child</span>
-            <span class="card-desc">Make your own Player ID</span>
-        <button type ="submit" name="child" class="card-btn btn-child">Child Sign Up</button>
-</div>
-    </form>
-<form action="teacher_register.php" method="get" style="display: contents;"><div class="card teacher" style="grid-column: 1 / -1; border: 4px solid #4361ee; box-shadow: 5px 5px 0 #3046b8;"><span class="card-title">I'm a Teacher</span><span class="card-desc">Follow your learners progress</span><button type="submit" class="card-btn" style="background:#4361ee;color:#fff;border-bottom:4px solid #3046b8">Teacher Sign Up</button></div></form></div>
+        <a href="child_signup.php" style="display:contents;text-decoration:none"><div class="card child"><span class="card-title">I'm a Child</span><span class="card-desc">Make your own Player ID</span><span class="card-btn btn-child" style="display:block;text-align:center">Child Sign Up</span></div></a>
+<a href="teacher_register.php" style="display:contents;text-decoration:none"><div class="card teacher" style="grid-column: 1 / -1; border: 4px solid #4361ee; box-shadow: 5px 5px 0 #3046b8;"><span class="card-title">I'm a Teacher</span><span class="card-desc">Follow your learners progress</span><span class="card-btn" style="display:block;text-align:center;background:#4361ee;color:#fff;border-bottom:4px solid #3046b8">Teacher Sign Up</span></div></a></div>
     <p class="login-link">Already have an account? <a href="login2.php">Log In Here</a></p>
     </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

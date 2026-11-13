@@ -42,12 +42,12 @@ small { color: #8D6E63; font-weight: 600; }
 <div class="wrap">
 <h1>Who is playing?</h1>
 <form method="post"><div class="grid">
-<a href="dashboard.php" class="tile par"><span class="av"><?= e(strtoupper(substr($parent["name"], 0, 1))) ?></span><span>Parent<br><small>Reports and settings</small></span></a>
+<a href="parent_dashboard.php" class="tile par"><span class="av"><?= e(strtoupper(substr($parent["name"], 0, 1))) ?></span><span>Parent<br><small>Reports and settings</small></span></a>
 <?php foreach ($children as $c): ?>
 <button type="submit" name="child_id" value="<?= (int) $c["id"] ?>" class="tile"><span class="av"><?= e(strtoupper(substr($c["name"], 0, 1))) ?></span><span><?= e($c["name"]) ?></span></button>
 <?php endforeach; ?>
 </div></form>
-<p class="links"><a href="registerchild.php">Add a child</a> &middot; <a href="logout.php">Logout</a></p>
+<p class="links"><a href="child_signup.php">Add a child</a> &middot; <a href="logout.php">Logout</a></p>
 </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

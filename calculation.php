@@ -67,9 +67,8 @@ if (
     $q = $_SESSION['current_q'] ?? [];
     save_quiz_attempt($_SESSION['child_id'], $operation, $q['operator'] ?? ($_SESSION['last_operator'] ?? ''), $q['num1'] ?? 0, $q['num2'] ?? 0, $correct_choice, $user_choice, $is_correct);
 
-    /* =====================================================
-       ATTEMPT COUNTER
-       ===================================================== */
+    // ATTEMPT COUNTER
+        
 
     if (!isset($_SESSION['attempts_count'])) {
         $_SESSION['attempts_count'] = 0;
@@ -81,9 +80,8 @@ if (
         $_SESSION['attempts_count'];
 
 
-    /* =====================================================
-       NORMAL FEEDBACK
-       ===================================================== */
+    //NORMAL FEEDBACK
+       
 
      if ($is_correct) {
         $points = max(1,4 - $attempts_count);
@@ -125,9 +123,8 @@ if (
         }
     }
 
-    /* =====================================================
-       5. FASTAPI FEEDBACK
-       ===================================================== */
+    //FASTAPI FEEDBACK
+    
 if ($show_feedback) {
     $api_url =
         "http://127.0.0.1:8000/api/v1/feedback";
@@ -163,9 +160,8 @@ if ($show_feedback) {
         json_encode($data);
 
 
-    /* =====================================================
-       SEND DATA TO FASTAPI
-       ===================================================== */
+    //SEND DATA TO FASTAPI
+
 
     if (function_exists('curl_init')) {
 
@@ -247,9 +243,9 @@ if ($show_feedback) {
 $round_label = round_gate("math", $message, $api_feedback); if ($generate_new) {
     
 $_SESSION['q_start'] = microtime(true); $_SESSION["skip_tries"] = 0;
-/* =========================================================
-   6. CHOOSE THE OPERATOR
-   ========================================================= */
+
+//6. CHOOSE THE OPERATOR
+   
 
 if ($operation === 'addition') {
 
@@ -277,9 +273,7 @@ if ($operation === 'addition') {
 }
 
 
-/* 
-   7. GENERATE A NEW QUESTION
-   */
+
 
 
 /* ADDITION */
@@ -335,9 +329,8 @@ else {
 }
 
 
-/* =========================================================
-   8. SAVE THE NEW ANSWER
-   ========================================================= */
+// 8. SAVE THE NEW ANSWER
+   
 
 $_SESSION['correct_answer'] =
     $correct;
@@ -346,9 +339,8 @@ $_SESSION['last_operator'] =
     $operator;
 
 
-/* =========================================================
-   9. CREATE MULTIPLE-CHOICE OPTIONS
-   ========================================================= */
+//9. CREATE MULTIPLE-CHOICE OPTIONS
+   
 
 $spread =
     ($operator === '*') ? 20 : 10;
@@ -415,7 +407,7 @@ if (isset($_GET['exit'])) {
         Score: <?php echo $final_score; ?> points<br>
         <?php echo $final_right; ?> of <?php echo $final_done; ?> questions right
     </div>
-    <a href="dashboard.php" class="btn next-btn">Back to Menu</a>
+    <a href="parent_dashboard.php" class="btn next-btn">Back to Menu</a>
 </div></div>
 <script>(function(){if(!("speechSynthesis" in window)){return;}var b=document.createElement("button");b.type="button";b.textContent="\uD83D\uDD0A Read aloud";b.style.cssText="position:fixed;right:14px;bottom:14px;z-index:60;border:none;border-radius:24px;background:#03A9F4;color:#fff;font-weight:800;padding:12px 16px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.25)";function t(s){var e=document.querySelector(s);return e?e.innerText.replace(/\s+/g," ").trim():"";}b.onclick=function(){if(speechSynthesis.speaking){speechSynthesis.cancel();return;}var q=t(".equation");q=q.replace(/\u00D7/g," times ").replace(/\u00F7/g," divided by ").replace(/\+/g," plus ").replace(/ - /g," minus ").replace(/=\s*\?/," equals what");var sc=document.querySelector(".scrambled");if(sc){q="Unscramble these letters: "+sc.innerText.trim().split("").join(", ");}var o=[];document.querySelectorAll(".answers button, #quizForm button").forEach(function(x){o.push(x.innerText.trim());});var parts=[t(".feedback, .correct, .wrong"),t(".ai-feedback"),t(".tip-box, .tip"),q||t(".question"),t(".hint")];if(o.length){parts.push("The choices are: "+o.join(", "));}var u=new SpeechSynthesisUtterance(parts.filter(Boolean).join(". "));u.lang="en-ZA";u.rate=0.9;speechSynthesis.speak(u);};document.body.appendChild(b);})();</script></body>
 </html>
@@ -471,10 +463,10 @@ $signs = ['+' => '+', '-' => '-', '*' => '&times;', '/' => '&divide;'];
         </form>
         <br>
 
-        <div class="action-row"><a href="calculation.php?skip=1" class="btn next-btn"><?= ((int) ($_SESSION["skip_tries"] ?? 0)) >= 2 ? "Skip anyway" : "Skip Question" ?></a><a href="dashboard.php" class="btn menu-btn">Menu</a></div>
+        <div class="action-row"><a href="calculation.php?skip=1" class="btn next-btn"><?= ((int) ($_SESSION["skip_tries"] ?? 0)) >= 2 ? "Skip anyway" : "Skip Question" ?></a><a href="parent_dashboard.php" class="btn menu-btn">Menu</a></div>
         <a href="calculation.php?exit=1" class="btn exit-btn">Finish &amp; See Score</a>
 
     </div>
 </div>
-<script>(function(){if(!("speechSynthesis" in window)){return;}var b=document.createElement("button");b.type="button";b.textContent="\uD83D\uDD0A Read aloud";b.style.cssText="position:fixed;right:14px;bottom:14px;z-index:60;border:none;border-radius:24px;background:#03A9F4;color:#fff;font-weight:800;padding:12px 16px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.25)";function t(s){var e=document.querySelector(s);return e?e.innerText.replace(/\s+/g," ").trim():"";}b.onclick=function(){if(speechSynthesis.speaking){speechSynthesis.cancel();return;}var q=t(".equation");q=q.replace(/\u00D7/g," times ").replace(/\u00F7/g," divided by ").replace(/\+/g," plus ").replace(/ - /g," minus ").replace(/=\s*\?/," equals what");var sc=document.querySelector(".scrambled");if(sc){q="Unscramble these letters: "+sc.innerText.trim().split("").join(", ");}var o=[];document.querySelectorAll(".answers button, #quizForm button").forEach(function(x){o.push(x.innerText.trim());});var parts=[t(".feedback, .correct, .wrong"),t(".ai-feedback"),t(".tip-box, .tip"),q||t(".question"),t(".hint")];if(o.length){parts.push("The choices are: "+o.join(", "));}var u=new SpeechSynthesisUtterance(parts.filter(Boolean).join(". "));u.lang="en-ZA";u.rate=0.9;speechSynthesis.speak(u);};document.body.appendChild(b);})();</script></body>
+<script>(function(){if(!("speechSynthesis" in window)){return;}var b=document.createElement("button");b.type="button";b.textContent="\uD83D\uDD0A Read aloud";b.style.cssText="position:fixed;right:14px;bottom:14px;z-index:60;border:none;border-radius:24px;background:#03A9F4;color:#fff;font-weight:800;padding:12px 16px;cursor:pointer;box-shadow:0 3px 8px rgba(0,0,0,.25)";function t(s){var e=document.querySelector(s);return e?e.innerText.replace(/\s+/g," ").trim():"";}b.onclick=function(){if(speechSynthesis.speaking){speechSynthesis.cancel();return;}var q=t(".equation");q=q.replace(/\u00D7/g," times ").replace(/\u00F7/g," divided by ").replace(/\+/g," plus ").replace(/ - /g," minus ").replace(/=\s*\?/," equals what");var sc=document.querySelector(".scrambled");if(sc){q="Unscramble these letters: "+sc.innerText.trim().split("").join(", ");}var o=[];document.querySelectorAll(".answers button, #quizForm button").forEach(function(x){o.push(x.innerText.trim());});var parts=[t(".feedback, .correct, .wrong"),t(".ai-feedback"),t(".tip-box, .tip"),q||t(".question"),t(".hint")];if(o.length){parts.push("The choices are: "+o.join(", "));}var u=new SpeechSynthesisUtterance(parts.filter(Boolean).join(". "));u.lang="en-ZA";u.rate=0.9;speechSynthesis.speak(u);};document.body.appendChild(b);})();</script><?php include __DIR__ . "/footer.php"; ?></body>
 </html>

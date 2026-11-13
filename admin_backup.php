@@ -58,7 +58,7 @@ td { padding: 8px; border-top: 1px solid #ECEFF1; }
 </style>
 </head>
 <body>
-<header><strong>LearnQuest Admin</strong><nav><a href="admin_dashboard.php">Home</a><a href="admin_accounts.php?tab=parents">Parents</a><a href="admin_accounts.php?tab=teachers">Teachers</a><a href="admin_accounts.php?tab=children">Children</a><a href="admin_backup.php" class="on">Backups</a><a href="admin_admins.php">Admins</a><a href="admin_logout.php">Log out (<?= e($admin["name"]) ?>)</a></nav></header>
+<header><strong>LearnQuest Admin</strong><nav><a href="admin_dashboard.php">Home</a><a href="admin_accounts.php?tab=parents">Parents</a><a href="admin_accounts.php?tab=teachers">Teachers</a><a href="admin_accounts.php?tab=children">Children</a><a href="admin_backup.php" class="on">Backups</a><a href="admin_links.php">Link requests</a><?php if (!empty($admin["is_super"])): ?><a href="admin_admins.php">Admins</a><a href="admin_check.php">System check</a><?php endif; ?><a href="admin_logout.php">Log out (<?= e($admin["name"]) ?>)</a></nav></header>
 <main>
 <h1>Backups</h1>
 <?php if ($msg): ?><div class="ok"><?= e($msg) ?></div><?php endif; ?>

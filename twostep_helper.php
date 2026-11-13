@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . "/mail_helper.php";
-if (!defined("TWOSTEP_ON")) { define("TWOSTEP_ON", true); }
+require_once __DIR__ . "/database.php"; require_once __DIR__ . "/settings_helper.php"; if (!defined("TWOSTEP_ON")) { define("TWOSTEP_ON", setting($pdo, "twostep_on", "1") === "1"); }
 function ts_hash($role, $id, $code) { return hash("sha256", "login:" . $role . ":" . $id . ":" . $code); }
 function ts_trusted($pdo, $role, $id) {
     $t = $_COOKIE["lq_trust_" . $role] ?? "";

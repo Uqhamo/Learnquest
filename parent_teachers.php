@@ -35,7 +35,7 @@ button { background: #E53935; color: #fff; border: none; border-radius: 10px; pa
 </head>
 <body>
 <div class="wrap">
-<a href="dashboard.php" class="back">&larr; Back to dashboard</a>
+<a href="parent_dashboard.php" class="back">&larr; Back to dashboard</a>
 <h1>Teachers who can see my children</h1>
 <p class="sub">A linked teacher sees the same progress report you see. They never see a PIN, a Player ID or your contact details. You can remove a teacher at any time.</p>
 <?php if ($msg): ?><div class="ok"><?= e($msg) ?></div><?php endif; ?>
@@ -44,5 +44,5 @@ button { background: #E53935; color: #fff; border: none; border-radius: 10px; pa
 <div class="card"><div><b><?= e($r["name"] . " " . $r["surname"]) ?></b><small><?= $r["tname"] ? "Teacher: " . e($r["tname"] . " " . $r["tsurname"]) . " (" . e($r["school"]) . ")" : "No teacher linked" ?></small></div><?php if ($r["tname"]): ?><form method="post" onsubmit="return confirm(String.fromCharCode(82,101,109,111,118,101,32,116,104,105,115,32,116,101,97,99,104,101,114,63));"><input type="hidden" name="action" value="remove"><input type="hidden" name="child_id" value="<?= (int) $r["id"] ?>"><button type="submit">Remove teacher</button></form><?php endif; ?></div>
 <?php endforeach; ?>
 </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

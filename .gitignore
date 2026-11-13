@@ -46,3 +46,4 @@ mail_config.php
 test_mail.php
 phpmailer/
 backup.ps1
+mail_config.php

@@ -1,7 +1,7 @@
 <?php
-if (!defined("ROUND_LENGTH")) { define("ROUND_LENGTH", 3); }
+if (!defined("ROUND_LENGTH")) { define("ROUND_LENGTH", 10); }
 if (!defined("BONUS_QUESTIONS")) { define("BONUS_QUESTIONS", 2); }
-if (!defined("BONUS_PERCENT")) { define("BONUS_PERCENT", 60); }
+if (!defined("BONUS_PERCENT")) { define("BONUS_PERCENT", 80); }
 function round_counts($game) {
     switch ($game) {
         case "math": return [(int) ($_SESSION["calc_done"] ?? 0), (int) ($_SESSION["calc_right"] ?? 0)];

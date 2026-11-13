@@ -1,5 +1,5 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) { session_start(); } require_once __DIR__ . "/database.php"; require_once __DIR__ . "/settings_helper.php"; if (setting($pdo, "maintenance", "0") === "1") { http_response_code(503); exit("<h2 style=\"font-family:sans-serif;text-align:center;margin-top:20vh\">LearnQuest is being updated. Please try again soon.</h2>"); } 
 require_once __DIR__ . "/database.php";
 require_once __DIR__ . "/progress_helper.php";
 if (empty($_SESSION["teacher_id"])) { header("Location: login2.php"); exit; }
@@ -73,7 +73,7 @@ small { color: #78909C; font-weight: 600; }
 </style>
 </head>
 <body>
-<header><h2>LearnQuest Teacher</h2><nav><a href="teacher_link.php">Learners<?php if ($waiting): ?> (<?= $waiting ?>)<?php endif; ?></a><a href="download_report.php">Download report</a><a href="logout.php">Logout</a></nav></header>
+<header><h2>LearnQuest Teachers</h2><nav><a href="teacher_link.php">Learners<?php if ($waiting): ?> (<?= $waiting ?>)<?php endif; ?></a><a href="download_choose.php">Download report</a><a href="logout.php">Logout</a></nav></header>
 <main>
 <h1 class="hello">Hello, <?= e($teacher["name"]) ?></h1>
 <p class="sub"><?= e($teacher["school"]) ?> &middot; <?= count($learners) ?> learner<?= count($learners) === 1 ? "" : "s" ?> linked to you</p>
@@ -92,5 +92,5 @@ small { color: #78909C; font-weight: 600; }
 </section>
 <?php endforeach; ?>
 </main>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

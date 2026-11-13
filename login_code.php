@@ -44,17 +44,57 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <title>LearnQuest - Login code</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: "Segoe UI", sans-serif; background: #FFF176; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
-.card { background: #fff; border: 4px solid #FF4081; border-radius: 24px; box-shadow: 6px 6px 0 #FF6D00; padding: 28px; width: 100%; max-width: 420px; }
-h1 { text-align: center; color: #FF4081; margin-bottom: 8px; }
-p { color: #5D4037; font-weight: 600; margin-bottom: 10px; text-align: center; }
-input.code { width: 100%; padding: 14px; border: 3px solid #FFD600; border-radius: 12px; font-size: 1.6rem; letter-spacing: 8px; text-align: center; background: #FFFDE7; }
-label.rem { display: block; text-align: left; margin-top: 10px; color: #5D4037; font-weight: 600; font-size: .9rem; }
-button { width: 100%; margin-top: 12px; padding: 13px; background: #FF4081; color: #fff; border: none; border-radius: 14px; font-size: 1.05rem; font-weight: 800; cursor: pointer; }
+body { font-family: "Segoe UI", sans-serif; 
+background: #FFF176; 
+min-height: 100vh; 
+display: flex; 
+justify-content: center; align-items: center; padding: 20px; }
+.card { background: #fff; 
+border: 4px solid #FF4081; 
+border-radius: 24px; 
+box-shadow: 6px 6px 0 #FF6D00; 
+padding: 28px; width: 100%; 
+max-width: 420px; }
+h1 { text-align: center;
+color: #FF4081; 
+margin-bottom: 8px; }
+p { color: #5D4037; 
+font-weight: 600; 
+margin-bottom: 10px; 
+text-align: center; }
+input.code { width: 100%; 
+padding: 14px; 
+border: 3px solid #FFD600; 
+border-radius: 12px; 
+font-size: 1.6rem; 
+letter-spacing: 8px; 
+text-align: center; background: #FFFDE7; }
+label.rem { display: block;
+ text-align: left; 
+ margin-top: 10px;
+color: #5D4037; 
+font-weight: 600; 
+font-size: .9rem; }
+button { width: 100%; 
+margin-top: 12px; 
+padding: 13px; 
+background: #FF4081; 
+color: #fff; 
+border: none; border-radius: 14px; 
+font-size: 1.05rem; font-weight: 800; 
+cursor: pointer; }
 button.alt { background: #4361ee; }
-.err { background: #FFCDD2; border: 3px solid #E53935; color: #C62828; border-radius: 12px; padding: 10px; font-weight: 700; margin-bottom: 10px; }
-.ok { background: #C8E6C9; border: 3px solid #4CAF50; color: #2E7D32; border-radius: 12px; padding: 10px; font-weight: 700; margin-bottom: 10px; }
-a.back { display: block; text-align: center; margin-top: 14px; color: #6A1B9A; font-weight: 800; }
+.err { background: #FFCDD2; 
+border: 3px solid #E53935; 
+color: #C62828; border-radius: 12px;
+ padding: 10px; font-weight: 700; margin-bottom: 10px; }
+.ok { background: #C8E6C9; 
+border: 3px solid #4CAF50; 
+color: #2E7D32; border-radius: 12px; 
+padding: 10px; font-weight: 700; margin-bottom: 10px; }
+a.back { display: block; 
+text-align: center; margin-top: 14px; 
+color: #6A1B9A; font-weight: 800; }
 </style>
 </head>
 <body>
@@ -63,9 +103,14 @@ a.back { display: block; text-align: center; margin-top: 14px; color: #6A1B9A; f
 <p>We sent a 6-digit code to <b><?= e($masked) ?></b>. It works for 10 minutes. Check your Spam folder too.</p>
 <?php if ($msg): ?><div class="ok"><?= e($msg) ?></div><?php endif; ?>
 <?php if ($err): ?><div class="err"><?= e($err) ?></div><?php endif; ?>
-<form method="post"><input type="text" name="code" class="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000" required><label class="rem"><input type="checkbox" name="remember" value="1"> Remember this device for 30 days</label><button type="submit">Log in</button></form>
-<form method="post"><input type="hidden" name="action" value="resend"><button type="submit" class="alt">Send me a new code</button></form>
+<form method="post"><input type="text" name="code" class="code" inputmode="numeric" maxlength="6" 
+autocomplete="one-time-code" placeholder="000000" required>
+<label class="rem">
+    <input type="checkbox" name="remember" value="1"> Remember this device for 30 days</label>
+    <button type="submit">Log in</button></form>
+<form method="post"><input type="hidden" name="action" value="resend">
+<button type="submit" class="alt">Send me a new code</button></form>
 <a href="welcome.php" class="back">&larr; Cancel</a>
 </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

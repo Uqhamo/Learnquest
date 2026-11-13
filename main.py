@@ -75,16 +75,16 @@ async def generate_feedback(attempt: QuizAttempt):
             "child_id": attempt.child_id,
             "age_bracket": age_group,
             "feedback": {
-                "message": message,
-                "audio_cue": audio_cue,
-                "ui_config": {
-                    "text_size": "large" if age_group == "younger" else "medium",
-                    "show_animation": attempt.is_correct or age_group == "younger",
-                    "auto_play_audio": age_group == "younger",
-                    "trigger_hint_overlay": not attempt.is_correct and attempt.attempts_count >= 2
-                }
+            "message": message,
+            "audio_cue": audio_cue,
+            "ui_config": {
+            "text_size": "large" if age_group == "younger" else "medium",
+            "show_animation": attempt.is_correct or age_group == "younger",
+            "auto_play_audio": age_group == "younger",
+            "trigger_hint_overlay": not attempt.is_correct and attempt.attempts_count >= 2}
             }
         }
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -103,18 +103,27 @@ async def generate_progress_feedback(data: PerformanceData):
     sub = data.subject.lower()
     if sub == 'math':
         if data.accuracy_rate >= 0.85 and data.avg_response_time < 5.0:
-            fb = {'status': 'mastered', 'summary': f'Your child has mastered {data.skill_node}! They are answering both quickly and accurately.', 'action_item': 'Ready to introduce the next complex concept.'}
+            fb = {'status': 'mastered', 'summary': f'Your child has mastered {data.skill_node}! They are answering both quickly and accurately.', 
+                  'action_item': 'Ready to introduce the next complex concept.'}
+            
         elif data.accuracy_rate >= 0.70 and data.avg_response_time > 10.0:
-            fb = {'status': 'good', 'summary': f'They understand {data.skill_node} well, but are taking their time to think through the steps.', 'action_item': 'Encourage them to practice more to build up fluency and confidence.'}
+            fb = {'status': 'good', 'summary': f'They understand {data.skill_node} well, but are taking their time to think through the steps.', 
+                  'action_item': 'Encourage them to practice more to build up fluency and confidence.'}
         elif data.accuracy_rate >= 0.50:
-            fb = {'status': 'progressing', 'summary': f'They are making steady progress with {data.skill_node}.', 'action_item': 'A little more practice will help them become faster and more confident.'}
+            fb = {'status': 'progressing', 'summary': f'They are making steady progress with {data.skill_node}.', 
+                  'action_item': 'A little more practice will help them become faster and more confident.'}
+            
         else:
-            fb = {'status': 'struggling', 'summary': f'They are finding {data.skill_node} a bit challenging right now.', 'action_item': 'Try practicing with visual objects or breaking the problems into smaller steps.'}
+            fb = {'status': 'struggling', 'summary': f'They are finding {data.skill_node} a bit challenging right now.', 
+                  'action_item': 'Try practicing with visual objects or breaking the problems into smaller steps.'}
     elif sub == 'english':
         if data.accuracy_rate < 0.50:
-            fb = {'status': 'struggling', 'summary': f'They are working hard, but struggling with {data.skill_node} patterns.', 'action_item': 'Try reading out loud together to reinforce these sound or word patterns.'}
+            fb = {'status': 'struggling', 'summary': f'They are working hard, but struggling with {data.skill_node} patterns.',
+                   'action_item': 'Try reading out loud together to reinforce these sound or word patterns.'}
         else:
-            fb = {'status': 'proficient', 'summary': f'Showing strong progress in {data.skill_node}.', 'action_item': 'Keep up the current reading routine.'}
+            fb = {'status': 'proficient', 'summary': f'Showing strong progress in {data.skill_node}.', 
+                  'action_item': 'Keep up the current reading routine.'}
+            
     fb['action_item'] = skill_tip(str(data.skill_node).lower(), fb['status'], fb.get('action_item', ''))
     return fb
 

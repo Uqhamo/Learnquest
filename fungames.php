@@ -35,7 +35,7 @@ h1 { text-align: center; color: #FF4081; font-size: 2rem; margin-bottom: 6px; }
 </head>
 <body>
 <div class="container">
-    <a href="dashboard.php" class="back">&larr; Back to Dashboard</a>
+    <a href="parent_dashboard.php" class="back">&larr; Back to Dashboard</a>
     <h1>&#127922; Fun Games</h1>
     <p class="subtitle">Pick a game and have fun while you learn!</p>
 
@@ -55,5 +55,5 @@ h1 { text-align: center; color: #FF4081; font-size: 2rem; margin-bottom: 6px; }
         <a href="unscramble.php" class="mini unscramble"><span class="icon">&#128256;</span>Unscramble</a>
     </div>
 </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

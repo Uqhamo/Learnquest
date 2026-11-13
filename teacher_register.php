@@ -7,14 +7,14 @@ function e($v) { return htmlspecialchars((string) $v, ENT_QUOTES, "UTF-8"); }
 $error = "";
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $name = ucfirst(trim($_POST["name"] ?? ""));
-    $surname = ucfirst(trim($_POST["surname"] ?? ""));
+    $surname = ucfirst(trim($_POST["surname"] ?? "")); if (($name !== "" && mb_strlen($name) < 2) || ($surname !== "" && mb_strlen($surname) < 2)) { $error = "Your name and surname must be at least 2 letters."; }
     $school = ucfirst(trim($_POST["school"] ?? ""));
     $email = strtolower(trim($_POST["email"] ?? ""));
     $pass = $_POST["pass"] ?? "";
     $confirm = $_POST["confirm"] ?? "";
     if ($name === "" || $surname === "" || $school === "") {
         $error = "Please fill in your name, surname and school.";
-    } elseif (($ee = email_problem($email)) !== "") {
+    } elseif (mb_strlen($name) < 2 || mb_strlen($surname) < 2) { $error = "Your name and surname must be at least 2 letters."; } elseif (($ee = email_problem($email)) !== "") {
         $error = $ee;
     } elseif (($pe = password_problem($pass, $name, $surname, $email)) !== "") {
         $error = $pe;
@@ -61,15 +61,15 @@ button { width: 100%; margin-top: 20px; padding: 14px; background: #4361ee; colo
 <p class="sub">Follow your learners progress in one place.</p>
 <?php if ($error): ?><div class="err"><?= e($error) ?></div><?php endif; ?>
 <form method="post">
-<div class="row"><div><label>Name</label><input type="text" name="name" style="text-transform:capitalize" value="<?= e($_POST["name"] ?? "") ?>" required></div><div><label>Surname</label><input type="text" name="surname" style="text-transform:capitalize" value="<?= e($_POST["surname"] ?? "") ?>" required></div></div>
+<div class="row"><div><label>Name</label><input type="text" name="name" minlength="2" title="At least 2 letters" style="text-transform:capitalize" value="<?= e($_POST["name"] ?? "") ?>" required></div><div><label>Surname</label><input type="text" name="surname" minlength="2" title="At least 2 letters" style="text-transform:capitalize" value="<?= e($_POST["surname"] ?? "") ?>" required></div></div>
 <label>School</label><input type="text" name="school" maxlength="100" value="<?= e($_POST["school"] ?? "") ?>" required>
 <label>Email</label><input type="email" name="email" maxlength="100" value="<?= e($_POST["email"] ?? "") ?>" required>
 <label>Password</label><input type="password" name="pass" minlength="8" autocomplete="new-password" required>
 <p class="hint">8 or more characters with a capital letter, a number and a symbol.</p>
-<label>Repeat the password</label><input type="password" name="confirm" autocomplete="new-password" required>
+<label>Repeat your password</label><input type="password" name="confirm" autocomplete="new-password" required>
 <button type="submit">Create teacher account</button>
 </form>
 <p class="links"><a href="login2.php">I already have an account</a> &middot; <a href="welcome.php">Back</a></p>
 </div>
-<script id="eye-toggle">(function(){var open='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';var shut='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';document.querySelectorAll("input[type=password]").forEach(function(i){if(i.dataset.eye){return;}i.dataset.eye="1";var w=document.createElement("div");w.style.cssText="position:relative;width:100%";i.parentNode.insertBefore(w,i);w.appendChild(i);i.style.paddingRight="46px";var b=document.createElement("button");b.type="button";b.innerHTML=open;b.setAttribute("aria-label","Show or hide the password");b.title="Show or hide";b.style.cssText="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:auto;margin:0;padding:4px;border:none;border-radius:8px;background:transparent;line-height:0;cursor:pointer;box-shadow:none;border-bottom:none";b.onclick=function(){var s=i.type==="password";i.type=s?"text":"password";b.innerHTML=s?shut:open;};w.appendChild(b);});})();</script></body>
+<script id="eye-toggle">(function(){var open='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';var shut='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';document.querySelectorAll("input[type=password]").forEach(function(i){if(i.dataset.eye){return;}i.dataset.eye="1";var w=document.createElement("div");w.style.cssText="position:relative;width:100%";i.parentNode.insertBefore(w,i);w.appendChild(i);i.style.paddingRight="46px";var b=document.createElement("button");b.type="button";b.innerHTML=open;b.setAttribute("aria-label","Show or hide the password");b.title="Show or hide";b.style.cssText="position:absolute;right:8px;top:50%;transform:translateY(-50%);width:auto;margin:0;padding:4px;border:none;border-radius:8px;background:transparent;line-height:0;cursor:pointer;box-shadow:none;border-bottom:none";b.onclick=function(){var s=i.type==="password";i.type=s?"text":"password";b.innerHTML=s?shut:open;};w.appendChild(b);});})();</script><?php include __DIR__ . "/footer.php"; ?></body>
 </html>

@@ -73,5 +73,5 @@ button { width: 100%; margin-top: 20px; padding: 14px; background: #FF4081; colo
     </form>
     <p class="links"><a href="login2.php">Back to log in</a></p>
 </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

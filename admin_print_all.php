@@ -9,4 +9,4 @@ admin_log($pdo, "print everything", "pdf");
 <div class="bar"><button onclick="window.print()">Print or save as PDF</button></div>
 <h1>LearnQuest - all reports</h1><p class="sub">Created <?= e(date("j F Y H:i")) ?> by <?= e($admin["name"]) ?>. Confidential: contains personal information. No passwords or PINs.</p>
 <?php foreach ($sets as $d): ?><section><h2><?= e($d[0]) ?></h2><table><tr><?php foreach ($d[1] as $h): ?><th><?= e($h) ?></th><?php endforeach; ?></tr><?php foreach ($d[2] as $r): ?><tr><?php foreach ($r as $cell): ?><td><?= e($cell) ?></td><?php endforeach; ?></tr><?php endforeach; ?></table><?php if (!$d[2]): ?><p>No data yet.</p><?php endif; ?></section><?php endforeach; ?>
-</body></html>
+<?php include __DIR__ . "/footer.php"; ?></body></html>

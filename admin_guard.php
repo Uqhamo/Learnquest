@@ -7,7 +7,7 @@ function e($v) { return htmlspecialchars((string) $v, ENT_QUOTES, "UTF-8"); }
 function admin_log($pdo, $action, $target = "") { $pdo->prepare("INSERT INTO admin_log (admin_id, action, target) VALUES (?, ?, ?)")->execute([(int) ($_SESSION["admin_id"] ?? 0), $action, $target]); }
 function admin_require($pdo) {
     if (empty($_SESSION["admin_id"])) { header("Location: admin_login.php"); exit; }
-    $st = $pdo->prepare("SELECT id, name FROM admins WHERE id = ?");
+    $st = $pdo->prepare("SELECT id, name, is_super FROM admins WHERE id = ?");
     $st->execute([(int) $_SESSION["admin_id"]]);
     $a = $st->fetch();
     if (!$a) { unset($_SESSION["admin_id"]); header("Location: admin_login.php"); exit; }

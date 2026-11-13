@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . "/admin_guard.php";
-$admin = admin_require($pdo);
+$admin = admin_require($pdo); if (empty($admin["is_super"])) { http_response_code(403); exit("Only the super admin can manage admins."); }
 require_once __DIR__ . "/email_rules.php";
 if (empty($_SESSION["admin_csrf"])) { $_SESSION["admin_csrf"] = bin2hex(random_bytes(16)); }
 $msg = ""; $err = ""; $temp = "";
@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
             }
         }
-        elseif ($id === (int) $admin["id"]) { $err = "You cannot do that to your own account."; }
+        elseif ($do !== "add" && (int) $pdo->query("SELECT is_super FROM admins WHERE id = " . (int) $id)->fetchColumn() === 1) { $err = "The super admin cannot be changed here."; } elseif ($id === (int) $admin["id"]) { $err = "You cannot do that to your own account."; }
         elseif ($do === "toggle") { $pdo->prepare("UPDATE admins SET disabled = 1 - disabled WHERE id = ?")->execute([$id]); admin_log($pdo, "lock/unlock admin", "#" . $id); $msg = "Admin updated."; }
         elseif ($do === "delete") {
             $n = (int) $pdo->query("SELECT COUNT(*) FROM admins")->fetchColumn();
@@ -69,7 +69,7 @@ form.inl button.red { background: #E53935; } form.inl button.go { background: #0
 </style>
 </head>
 <body>
-<header><strong>LearnQuest Admin</strong><nav><a href="admin_dashboard.php">Home</a><a href="admin_accounts.php?tab=parents">Parents</a><a href="admin_accounts.php?tab=teachers">Teachers</a><a href="admin_accounts.php?tab=children">Children</a><a href="admin_backup.php">Backups</a><a href="admin_admins.php" class="on">Admins</a><a href="admin_logout.php">Log out (<?= e($admin["name"]) ?>)</a></nav></header>
+<header><strong>LearnQuest Admin</strong><nav><a href="admin_dashboard.php">Home</a><a href="admin_accounts.php?tab=parents">Parents</a><a href="admin_accounts.php?tab=teachers">Teachers</a><a href="admin_accounts.php?tab=children">Children</a><a href="admin_backup.php">Backups</a><a href="admin_admins.php" class="on">Admins</a><a href="admin_links.php">Link requests</a><?php if (!empty($admin["is_super"])): ?><a href="admin_check.php">System check</a><?php endif; ?><?php if (!empty($admin["is_super"])): ?><?php endif; ?><a href="admin_logout.php">Log out (<?= e($admin["name"]) ?>)</a></nav></header>
 <main>
 <h1>Admins</h1>
 <?php if ($msg): ?><div class="ok"><?= e($msg) ?></div><?php endif; ?>
@@ -79,5 +79,5 @@ form.inl button.red { background: #E53935; } form.inl button.go { background: #0
 <div class="box"><table><tr><th>Name</th><th>Email</th><th>Status</th><th>Added</th><th>Actions</th></tr>
 <?php foreach ($rows as $r): ?><tr><td><?= e($r["name"]) ?><?= (int) $r["id"] === (int) $admin["id"] ? " (you)" : "" ?></td><td><?= e($r["email"]) ?></td><td><?= $r["disabled"] ? "<span class=\"tag bad2\">locked</span>" : "<span class=\"tag\">active</span>" ?> <?= $r["must_change"] ? "<span class=\"tag warn\">must change password</span>" : "" ?></td><td><?= e(substr($r["created_at"], 0, 10)) ?></td><td><?php if ((int) $r["id"] !== (int) $admin["id"]): ?><?= aact($r["disabled"] ? "Unlock" : "Lock", "toggle", $r["id"], $r["disabled"] ? "go" : "red") ?><?= aact("Delete admin", "delete", $r["id"], "red") ?><?php endif; ?></td></tr><?php endforeach; ?></table></div>
 </main>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

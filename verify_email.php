@@ -13,7 +13,7 @@ $acc = $st->fetch();
 if (!$acc) { unset($_SESSION["verify_pending"]); header("Location: welcome.php"); exit; }
 $masked = substr($acc["email"], 0, 2) . "***" . substr($acc["email"], strpos($acc["email"], "@"));
 $msg = ""; $err = "";
-function vh_done($role, $id) { unset($_SESSION["verify_pending"]); session_regenerate_id(true); if ($role === "teacher") { $_SESSION["teacher_id"] = $id; header("Location: teacher_dashboard.php"); } else { $_SESSION["parent_id"] = $id; header("Location: select_child.php"); } exit; }
+function vh_done($role, $id) { unset($_SESSION["verify_pending"]); global $pdo; $tb = ($role === "teacher") ? "teachers" : "parents"; $ap = $pdo->prepare("SELECT approved FROM " . $tb . " WHERE id = ?"); $ap->execute([$id]); if (!(int) $ap->fetchColumn()) { header("Location: login2.php?pending=1"); exit; } session_regenerate_id(true); if ($role === "teacher") { $_SESSION["teacher_id"] = $id; header("Location: teacher_dashboard.php"); } else { $_SESSION["parent_id"] = $id; header("Location: select_child.php"); } exit; }
 if ((int) $acc["email_verified"] === 1) { vh_done($role, $id); }
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (($_POST["action"] ?? "") === "resend") {
@@ -60,5 +60,5 @@ a.back { display: block; text-align: center; margin-top: 14px; color: #6A1B9A; f
 <form method="post"><input type="hidden" name="action" value="resend"><button type="submit" class="alt">Send me a new code</button></form>
 <a href="welcome.php" class="back">&larr; Back</a>
 </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

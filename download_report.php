@@ -14,26 +14,30 @@ if (!$role) { header("Location: login2.php"); exit; }
 $only = isset($_GET["child"]) ? (int) $_GET["child"] : 0;
 if ($only) { $kids = array_values(array_filter($kids, function ($k) use ($only) { return (int) $k["id"] === $only; })); }
 if (!$kids) { http_response_code(404); echo "No report available."; exit; }
-if (!isset($_GET["format"])) {
-    $h = function ($v) { return htmlspecialchars((string) $v, ENT_QUOTES, "UTF-8"); };
-    echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Download a report</title><style>body{font-family:"Segoe UI",sans-serif;background:#F3F6FB;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px}.card{background:#fff;border-radius:16px;padding:26px;width:100%;max-width:420px;box-shadow:0 2px 10px rgba(0,0,0,.12)}h1{font-size:1.3rem;margin-bottom:12px;color:#00695C}label{display:block;font-weight:700;margin:12px 0 4px}select{width:100%;padding:11px;border:2px solid #CFD8DC;border-radius:10px;font-size:1rem}button{width:100%;margin-top:16px;padding:13px;background:#00897B;color:#fff;border:none;border-radius:12px;font-size:1.05rem;font-weight:800;cursor:pointer}a{display:block;text-align:center;margin-top:12px;color:#546E7A;font-weight:700}</style></head><body><div class="card"><h1>Download a report</h1><form method="get">';
-    if (count($kids) > 1) { echo '<label>Which learner?</label><select name="child"><option value="0">All learners</option>'; foreach ($kids as $k) { echo '<option value="' . (int) $k["id"] . '">' . $h($k["name"] . " " . $k["surname"]) . '</option>'; } echo '</select>'; }
-    echo '<label>File type</label><select name="format"><option value="csv">CSV (opens in Excel)</option><option value="print">PDF (print and save)</option></select><button type="submit">Download</button></form><a href="javascript:history.back()">Back</a></div></body></html>';
-    exit;
-}
-$format = ($_GET["format"] ?? "csv") === "print" ? "print" : "csv";
+$format = in_array($_GET["format"] ?? "csv", ["csv", "print", "doc"], true) ? $_GET["format"] : "csv";
 $names = activity_names();
 $rows = [];
 foreach ($kids as $k) { $all = activity_rows($k["id"]); $weeks = activity_weeks($all, 12); foreach ($weeks as $w) { foreach ($w["skills"] as $s => $v) { $rows[] = [$k["name"] . " " . $k["surname"], $k["grade"], $w["start"], $names[$s] ?? ucfirst($s), $v["total"], $v["right"], $v["total"] ? round($v["right"] / $v["total"] * 100) : 0]; } } }
+$who = $role === "parent" ? "for my children" : ($role === "teacher" ? "for my learners" : "for me");
+$labels = ["mastered" => "Mastered", "proficient" => "Doing well", "good" => "Good", "progressing" => "Progressing", "processing" => "Taking their time", "struggling" => "Needs help", "neutral" => "New"];
+$prog = []; $attn = [];
+foreach ($kids as $k) { try { $rep = get_progress_report((string) $k["id"]); } catch (Exception $ex) { $rep = []; } foreach ($rep as $r) { $nm = $k["name"] . " " . $k["surname"]; $sk = $names[$r["skill"]] ?? ucfirst($r["skill"]); $prog[] = [$nm, $k["grade"], $sk, (int) $r["total"], (int) $r["accuracy"], $labels[$r["status"]] ?? "New", $r["summary"] ?? "", $r["action"] ?? ""]; if ($r["status"] === "struggling") { $attn[] = [$nm, $sk, (int) $r["accuracy"], $r["action"] ?? ""]; } } }
 if ($format === "csv") {
     header("Content-Type: text/csv; charset=UTF-8");
     header("Content-Disposition: attachment; filename=\"learnquest-report-" . date("Y-m-d") . ".csv\"");
     $out = fopen("php://output", "w"); fwrite($out, "\xEF\xBB\xBF");
+    fputcsv($out, ["Report " . $who . " - " . date("Y-m-d")]); fputcsv($out, []);
+    fputcsv($out, ["NEEDS ATTENTION"]); fputcsv($out, ["Learner", "Activity", "Percent right", "Suggestion"]);
+    foreach ($attn as $r) { fputcsv($out, array_map("csv_cell", $r)); } if (!$attn) { fputcsv($out, ["Nothing needs attention"]); } fputcsv($out, []);
+    fputcsv($out, ["PROGRESS BY ACTIVITY"]); fputcsv($out, ["Learner", "Grade", "Activity", "Questions", "Percent right", "Status", "Summary", "Suggestion"]);
+    foreach ($prog as $r) { fputcsv($out, array_map("csv_cell", $r)); } fputcsv($out, []);
+    fputcsv($out, ["WEEKLY PROGRESS"]);
     fputcsv($out, ["Learner", "Grade", "Week starting", "Activity", "Questions", "Right", "Percent right"]);
     foreach ($rows as $r) { fputcsv($out, array_map("csv_cell", $r)); }
     fclose($out); exit;
 }
 function e($v) { return htmlspecialchars((string) $v, ENT_QUOTES, "UTF-8"); }
+if ($format === "doc") { header("Content-Type: application/msword; charset=UTF-8"); header("Content-Disposition: attachment; filename=\"learnquest-report-" . date("Y-m-d") . ".doc\""); }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -53,9 +57,12 @@ th { background: #eee; }
 </style>
 </head>
 <body>
-<div class="bar"><button onclick="window.print()">Print or save as PDF</button></div>
-<h1>LearnQuest progress report</h1>
+<?php if ($format === "print"): ?><div class="bar"><button onclick="window.print()">Print or save as PDF</button></div><?php endif; ?>
+<h1>LearnQuest progress report <?= e($who) ?></h1>
 <p class="sub">Created <?= e(date("j F Y H:i")) ?>. Each week runs Monday to Sunday.</p>
+<h2>Needs attention</h2><?php if (!$attn): ?><p>Nothing needs attention right now.</p><?php else: ?><table><tr><th>Learner</th><th>Activity</th><th>Percent right</th><th>Suggestion</th></tr><?php foreach ($attn as $r): ?><tr><td><?= e($r[0]) ?></td><td><?= e($r[1]) ?></td><td><?= (int) $r[2] ?>%</td><td><?= e($r[3]) ?></td></tr><?php endforeach; ?></table><?php endif; ?>
+<h2>Progress by activity</h2><table><tr><th>Learner</th><th>Grade</th><th>Activity</th><th>Questions</th><th>Percent right</th><th>Status</th><th>Summary</th><th>Suggestion</th></tr><?php foreach ($prog as $r): ?><tr><td><?= e($r[0]) ?></td><td><?= (int) $r[1] ?></td><td><?= e($r[2]) ?></td><td><?= (int) $r[3] ?></td><td><?= (int) $r[4] ?>%</td><td><?= e($r[5]) ?></td><td><?= e($r[6]) ?></td><td><?= e($r[7]) ?></td></tr><?php endforeach; ?></table><?php if (!$prog): ?><p>No activity yet.</p><?php endif; ?>
+<h2>Weekly progress</h2>
 <table><tr><th>Learner</th><th>Grade</th><th>Week starting</th><th>Activity</th><th>Questions</th><th>Right</th><th>Percent right</th></tr>
 <?php foreach ($rows as $r): ?><tr><td><?= e($r[0]) ?></td><td><?= (int) $r[1] ?></td><td><?= e($r[2]) ?></td><td><?= e($r[3]) ?></td><td><?= (int) $r[4] ?></td><td><?= (int) $r[5] ?></td><td><?= (int) $r[6] ?>%</td></tr><?php endforeach; ?>
 </table>

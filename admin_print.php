@@ -37,5 +37,5 @@ tr { page-break-inside: avoid; }
 <table><tr><?php foreach ($heads[$what] as $h): ?><th><?= e($h) ?></th><?php endforeach; ?></tr>
 <?php foreach ($rows as $r): ?><tr><?php foreach ($r as $cell): ?><td><?= e($cell) ?></td><?php endforeach; ?></tr><?php endforeach; ?></table>
 <?php if (!$rows): ?><p>No data yet.</p><?php endif; ?>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

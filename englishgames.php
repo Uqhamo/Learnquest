@@ -144,7 +144,7 @@ session_start();
 
 <div class="container">
 
-    <a href="dashboard.php" class="back-link">
+    <a href="parent_dashboard.php" class="back-link">
         ← Back to Dashboard
     </a>
 
@@ -237,5 +237,5 @@ session_start();
 
 </div>
 
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

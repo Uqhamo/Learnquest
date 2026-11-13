@@ -1,0 +1,10 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) { @session_start(); }
+$fl = []; $pg = basename($_SERVER["SCRIPT_NAME"], ".php"); $pal = ["spelling" => ["#FF4081","#C2185B"], "sentence" => ["#03A9F4","#0277BD"], "opposites" => ["#4CAF50","#2E7D32"], "unscramble" => ["#FF9800","#E65100"], "calculation" => ["#4CAF50","#2E7D32"], "topics_game" => ["#4CAF50","#2E7D32"], "round_end" => ["#FF4081","#FF6D00"], "mypage" => ["#FF4081","#FF6D00"], "my_activity" => ["#FF4081","#FF6D00"], "child_link" => ["#FF4081","#FF6D00"], "parent_dashboard" => ["#00ACC1","#00897B"], "family_activity" => ["#00ACC1","#00897B"], "parent_teachers" => ["#00ACC1","#00897B"], "link_child" => ["#00ACC1","#00897B"], "select_child" => ["#00ACC1","#00897B"], "profile" => ["#00ACC1","#00897B"], "teacher_dashboard" => ["#4361ee","#3046b8"], "teacher_link" => ["#4361ee","#3046b8"], "download_choose" => ["#00ACC1","#00897B"]]; if (strpos($pg, "admin_") === 0) { $col = ["#455A64","#263238"]; } else { $col = $pal[$pg] ?? ["#FF4081","#FF6D00"]; }
+if (!empty($_SESSION["admin_id"])) { $fl = [["Admin home", "admin_dashboard.php"], ["Log out", "admin_logout.php"]]; }
+elseif (!empty($_SESSION["teacher_id"])) { $fl = [["Dashboard", "teacher_dashboard.php"], ["Learners", "teacher_link.php"], ["Log out", "logout.php"]]; }
+elseif (!empty($_SESSION["parent_id"]) && empty($_SESSION["child_mode"])) { $fl = [["Dashboard", "parent_dashboard.php"], ["Weekly progress", "family_activity.php"], ["Log out", "logout.php"]]; }
+elseif (!empty($_SESSION["child_login"]) || !empty($_SESSION["child_mode"])) { $fl = [["My page", "mypage.php"], ["My activity", "my_activity.php"]]; }
+else { $fl = [["Welcome", "welcome.php"], ["Log in", "login2.php"]]; }
+?>
+<footer class="lq-footer" style="background:<?= $col[0] ?>">LearnQuest &middot; Learn, play and grow, one question at a time &middot; &copy; <?= date("Y") ?></footer><style>.lq-footer{position:fixed;left:0;right:0;bottom:0;z-index:40;margin:0;padding:3px 8px;text-align:center;color:#fff;font-family:"Segoe UI",sans-serif;font-size:.62rem;font-weight:600;line-height:1.3;border-radius:0}body{padding-bottom:28px !important}</style>

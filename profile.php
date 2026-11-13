@@ -52,7 +52,7 @@ h2 { color: #FF6D00; font-size: 1.2rem; margin-bottom: 12px; }
 </head>
 <body>
 <div class="container">
-    <a href="dashboard.php" class="back">&larr; Back to Dashboard</a>
+    <a href="parent_dashboard.php" class="back">&larr; Back to Dashboard</a>
 
     <div class="card">
         <div class="avatar"><?= e(strtoupper(substr($parent['name'], 0, 1) . substr($parent['surname'], 0, 1))) ?></div>
@@ -81,5 +81,5 @@ h2 { color: #FF6D00; font-size: 1.2rem; margin-bottom: 12px; }
         </div>
     </div>
 </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>

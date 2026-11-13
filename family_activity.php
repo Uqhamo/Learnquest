@@ -49,8 +49,8 @@ tr.good td:nth-child(3) { color: #2E7D32; font-weight: 700; }
 </head>
 <body>
 <div class="wrap">
-<a href="dashboard.php" class="back">&larr; Back to dashboard</a>
-<h1>Weekly progress and activity</h1><p style="margin:6px 0 14px"><a href="download_report.php" style="background:#00897B;color:#fff;padding:8px 14px;border-radius:10px;font-weight:800;text-decoration:none">Download report</a></p>
+<a href="parent_dashboard.php" class="back">&larr; Back to dashboard</a>
+<h1>Weekly progress and activity</h1><p style="margin:6px 0 14px"><p style="margin:6px 0 14px"><a href="download_choose.php" style="background:#00897B;color:#fff;padding:9px 16px;border-radius:10px;font-weight:800;text-decoration:none;display:inline-block">Download report for my children</a></p></p>
 <p class="sub">Each week runs Monday to Sunday. The activity list shows the latest answers and whether they were right.</p>
 <?php if (!$kids): ?><div class="empty">No children linked yet.</div><?php endif; ?>
 <?php foreach ($kids as $k): $wl = array_values($k["weeks"]); $cur = $k["weeks"][$thisMon] ?? null; $cp = ($cur && $cur["total"]) ? (int) round($cur["right"] / $cur["total"] * 100) : 0; ?>
@@ -70,5 +70,5 @@ tr.good td:nth-child(3) { color: #2E7D32; font-weight: 700; }
 </section>
 <?php endforeach; ?>
 </div>
-</body>
+<?php include __DIR__ . "/footer.php"; ?></body>
 </html>
